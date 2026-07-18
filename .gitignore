@@ -1,0 +1,19 @@
+# deps
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# builds
+dist/
+build/
+
+# env - real keys never get committed, use .env.example
+.env
+.env.local
+.env.*.local
+
+# misc
+.DS_Store
+*.log

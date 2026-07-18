@@ -1,0 +1,219 @@
+:root {
+  /* Color tokens */
+  --board: #14181d;
+  --panel: #1f252d;
+  --panel-line: #2b323c;
+  --flap-amber: #e8a33d;
+  --chalk: #edeae3;
+  --chalk-dim: #9aa0a8;
+  --route-teal: #4fa3a0;
+  --stamp-red: #c1483b;
+
+  /* Type */
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-body: "Inter", -apple-system, sans-serif;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--board);
+  color: var(--chalk);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  min-height: 100vh;
+  padding: 2.5rem 1.5rem 4rem;
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+/* ---- Header: board casing look ---- */
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--panel-line);
+  margin-bottom: 2rem;
+}
+
+.brand {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: 0.02em;
+  color: var(--chalk);
+}
+
+.brand span {
+  color: var(--flap-amber);
+}
+
+.tagline {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--chalk-dim);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ---- Board column labels ---- */
+.board-labels {
+  display: grid;
+  grid-template-columns: 2.2fr 1.3fr 1.3fr 1.6fr;
+  gap: 0.75rem;
+  padding: 0 1.25rem 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--chalk-dim);
+}
+
+/* ---- Route rows ---- */
+.route-row {
+  display: grid;
+  grid-template-columns: 2.2fr 1.3fr 1.3fr 1.6fr;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 0.65rem;
+  transition: border-color 0.2s ease;
+}
+
+.route-row:hover {
+  border-color: var(--flap-amber);
+}
+
+.route-category {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.route-destination {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--chalk-dim);
+}
+
+/* ---- Split-flap number ---- */
+.flap {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--flap-amber);
+  background: #0f1216;
+  border-radius: 6px;
+  padding: 0.35rem 0.6rem;
+  display: inline-block;
+  letter-spacing: 0.02em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* ---- Status pill ---- */
+.status {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.status--boarding {
+  color: var(--route-teal);
+  background: rgba(79, 163, 160, 0.12);
+}
+
+.status--waiting {
+  color: var(--chalk-dim);
+  background: rgba(154, 160, 168, 0.1);
+}
+
+/* ---- Coach message card ---- */
+.coach-card {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border-radius: 10px;
+  background: linear-gradient(180deg, var(--panel) 0%, #191e25 100%);
+  border: 1px solid var(--panel-line);
+  border-left: 3px solid var(--flap-amber);
+}
+
+.coach-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--flap-amber);
+  margin-bottom: 0.5rem;
+}
+
+.coach-message {
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--chalk);
+}
+
+/* ---- Footer meta ---- */
+.meta {
+  margin-top: 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--chalk-dim);
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ---- Loading state ---- */
+.loading {
+  font-family: var(--font-mono);
+  color: var(--chalk-dim);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 620px) {
+  .board-labels {
+    display: none;
+  }
+  .route-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

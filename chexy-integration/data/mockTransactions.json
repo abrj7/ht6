@@ -1,0 +1,7 @@
+[
+  { "category": "food_delivery", "amount": 42.50, "date": "2026-07-10", "merchant": "UberEats" },
+  { "category": "food_delivery", "amount": 38.00, "date": "2026-07-03", "merchant": "SkipTheDishes" },
+  { "category": "subscriptions", "amount": 15.99, "date": "2026-07-01", "merchant": "Netflix" },
+  { "category": "subscriptions", "amount": 9.99, "date": "2026-07-01", "merchant": "Spotify" },
+  { "category": "shopping", "amount": 89.00, "date": "2026-07-05", "merchant": "Amazon" }
+]
