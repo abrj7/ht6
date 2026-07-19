@@ -5,6 +5,9 @@ const TITLES = {
   dashboard: "Dashboard",
   exchange: "Yonder Exchange",
   map: "Market Map",
+  concierge: "Concierge",
+  nowcast: "Economic Nowcast",
+  match: "Suite Hearts",
 };
 
 export default function TopBar({ view, buyingPower, lastUpdated }) {

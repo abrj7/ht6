@@ -4,6 +4,9 @@ import TopBar from "./components/TopBar.jsx";
 import DashboardView from "./components/DashboardView.jsx";
 import ExchangeView from "./components/ExchangeView.jsx";
 import MapView from "./components/MapView.jsx";
+import ConciergeView from "./components/ConciergeView.jsx";
+import NowcastView from "./components/NowcastView.jsx";
+import MatchView from "./components/MatchView.jsx";
 import { useOpportunity, useMarket } from "./feeds.js";
 
 // Person A owns this file and everything in /frontend except
@@ -87,6 +90,10 @@ export default function App() {
               </div>
             </div>
           )}
+
+          {view === "concierge" && <ConciergeView />}
+          {view === "nowcast" && <NowcastView />}
+          {view === "match" && <MatchView />}
         </main>
       </div>
     </div>

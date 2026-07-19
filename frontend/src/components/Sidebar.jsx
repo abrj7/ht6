@@ -35,12 +35,52 @@ const ICONS = {
       <circle cx="8" cy="6.5" r="1.6" fill="none" stroke="currentColor" strokeWidth="1.4" />
     </svg>
   ),
+  concierge: (
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+      <path
+        d="M2 3.5h12v7H8.5L5 13.5v-3H2z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+      <circle cx="5.5" cy="7" r="0.9" fill="currentColor" />
+      <circle cx="8" cy="7" r="0.9" fill="currentColor" />
+      <circle cx="10.5" cy="7" r="0.9" fill="currentColor" />
+    </svg>
+  ),
+  nowcast: (
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+      <path
+        d="M1.5 13.5V8.5m4.3 5V5.5m4.4 8V9.5m4.3 4v-10"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <circle cx="14.5" cy="2.5" r="1.1" fill="currentColor" />
+    </svg>
+  ),
+  match: (
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+      <path
+        d="M8 13.5S2 9.9 2 6.2C2 4.2 3.6 3 5.2 3c1.2 0 2.2.6 2.8 1.6C8.6 3.6 9.6 3 10.8 3 12.4 3 14 4.2 14 6.2c0 3.7-6 7.3-6 7.3z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+    </svg>
+  ),
 };
 
 const NAV_ITEMS = [
   { id: "dashboard", label: "Dashboard" },
   { id: "exchange", label: "Exchange" },
   { id: "map", label: "Map" },
+  { id: "concierge", label: "Concierge" },
+  { id: "nowcast", label: "Nowcast" },
+  { id: "match", label: "Match" },
 ];
 
 export default function Sidebar({ view, onNavigate, feedLabel, feedIsLive }) {

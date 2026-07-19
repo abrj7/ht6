@@ -11,10 +11,20 @@ import {
   CITY_CENTERS,
   resolveCity,
 } from "./mockStay22.js";
+import ragRouter from "./routes/rag.js";
+import voiceRouter from "./routes/voice.js";
+import nowcastRouter from "./routes/nowcast.js";
+import matchRouter from "./routes/match.js";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Feature routers - each owned by its workstream (see file headers).
+app.use("/api/ask", ragRouter);
+app.use("/api/voice", voiceRouter);
+app.use("/api/nowcast", nowcastRouter);
+app.use("/api/match", matchRouter);
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://localhost:5001";
 const CHEXY_SERVICE_URL = process.env.CHEXY_SERVICE_URL || "http://localhost:5002";
