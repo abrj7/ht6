@@ -399,5 +399,12 @@
     "date": "2026-07-19",
     "merchant": "Manual entry",
     "userId": "demo"
+  },
+  {
+    "category": "Coffee",
+    "amount": 12.5,
+    "date": "2026-07-19",
+    "merchant": "Test",
+    "userId": "demo"
   }
 ]

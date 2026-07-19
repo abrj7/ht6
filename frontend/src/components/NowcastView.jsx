@@ -26,6 +26,20 @@ function signalLabel(signal) {
   return "Stable";
 }
 
+// Plain-language "book now or wait" verdict from the demand signal — the whole
+// point of the view for a traveler.
+function verdict(signal) {
+  if (signal === "heating") return { label: "Book soon", cls: "heat", arrow: "▲" };
+  if (signal === "cooling") return { label: "Safe to wait", cls: "cool", arrow: "▼" };
+  return { label: "Flexible", cls: "flat", arrow: "▬" };
+}
+
+function compositeRead(signal) {
+  if (signal === "heating") return "Prices are firming up — lock in dates sooner.";
+  if (signal === "cooling") return "Prices are easing — you can afford to wait.";
+  return "Prices are steady — book whenever suits you.";
+}
+
 function buildDemoHistory() {
   const now = Date.now();
   const interval = 100 * 60 * 1000;
@@ -124,10 +138,12 @@ function Gauge({ index, signal, label }) {
         />
       </svg>
       <div className="nowcast-gauge__value">
-        {round1(index)}
-        <span className="nowcast-gauge__base"> / 100</span>
+        {index > 100 ? "+" : ""}
+        {round1(index - 100)}%
+        <span className="nowcast-gauge__base"> vs typical</span>
       </div>
       <span className={`nowcast-signal nowcast-signal--${signal}`}>{signalLabel(signal)}</span>
+      <p className="nowcast-gauge__read">{compositeRead(signal)}</p>
     </div>
   );
 }
@@ -341,11 +357,14 @@ function NowcastChart({ composite, events }) {
 
 function CityCard({ city }) {
   const { formatInt } = useCurrency();
+  const v = verdict(city.signal);
   return (
     <article className="nowcast-city">
       <div className="nowcast-city__top">
         <span className="nowcast-city__symbol">{city.symbol}</span>
-        <span className="nowcast-city__hdx">{city.hdx != null ? round1(city.hdx) : "—"}</span>
+        <span className={`nowcast-verdict nowcast-verdict--${v.cls}`}>
+          {v.arrow} {v.label}
+        </span>
       </div>
       <div className="nowcast-city__name">{city.city}</div>
       <span className={`nowcast-signal nowcast-signal--${city.signal}`}>{signalLabel(city.signal)}</span>

@@ -60,7 +60,9 @@ export async function ensureUserProfile(req, res, next) {
 
     next();
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to persist user profile" });
+    // Profile upsert is best-effort telemetry — never block the actual request
+    // (e.g. saving a spend) just because the users collection write failed.
+    console.warn("ensureUserProfile skipped (non-fatal):", err.message);
+    next();
   }
 }

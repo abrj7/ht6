@@ -2044,3 +2044,131 @@ body {
   font-size: 14px;
   letter-spacing: 0.04em;
 }
+
+/* ============================================================
+   UI POLISH PASS — elevation, motion, numerics (additive layer)
+   Later cascade intentionally refines earlier rules.
+   ============================================================ */
+:root {
+  --shadow-sm: 0 1px 2px rgba(20, 24, 29, 0.05), 0 1px 3px rgba(20, 24, 29, 0.05);
+  --shadow-md: 0 6px 16px rgba(20, 24, 29, 0.07), 0 2px 6px rgba(20, 24, 29, 0.05);
+  --shadow-lg: 0 18px 40px rgba(20, 24, 29, 0.12), 0 6px 12px rgba(20, 24, 29, 0.06);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+:root[data-theme="dark"] {
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 20px 46px rgba(0, 0, 0, 0.6);
+}
+
+/* Elevation + smooth state on the main surfaces */
+.panel,
+.coach-card,
+.ticker-card,
+.route-card,
+.nowcast-city,
+.nowcast-panel,
+.cg-card {
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.28s var(--ease), transform 0.2s var(--ease),
+    border-color 0.2s ease;
+}
+.chart-panel:hover,
+.ticker-card:hover,
+.nowcast-city:hover,
+.cg-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: color-mix(in srgb, var(--flap-amber) 32%, var(--panel-line));
+}
+.nowcast-city:hover,
+.cg-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Tabular figures so live-updating numbers stop jittering */
+.flap,
+.chart-head__price,
+.power-amount,
+.power-chip__amount,
+.ticker-last,
+.ticker-range__values,
+.book-price,
+.cg-price,
+.nowcast-city__hdx,
+.delta-chip,
+.change-chip,
+.portfolio-strip,
+.board,
+.nowcast-grid {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Primary button: soft gradient + lift instead of flat pill */
+.button--primary {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--flap-amber) 88%, white),
+    var(--flap-amber)
+  );
+  box-shadow: 0 2px 8px rgba(176, 116, 23, 0.28);
+}
+.button--primary:hover {
+  filter: brightness(1.04);
+  box-shadow: 0 4px 14px rgba(176, 116, 23, 0.34);
+}
+
+/* Consistent press feedback + easing on interactive controls */
+.button,
+.nav-item,
+.cg-btn,
+.cg-chip,
+.book-now,
+.buy-cta,
+.cg-book {
+  transition: transform 0.15s var(--ease), background-color 0.2s ease,
+    border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+.button:active,
+.cg-btn:active,
+.book-now:active,
+.buy-cta:active,
+.cg-book:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+/* Refined thin scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--panel-line) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--panel-line);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--chalk-dim);
+  background-clip: content-box;
+}
+
+/* Views rise gently on mount / navigation */
+@media (prefers-reduced-motion: no-preference) {
+  .content > * {
+    animation: yv-rise 0.4s var(--ease) both;
+  }
+}
+@keyframes yv-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

@@ -2687,7 +2687,55 @@
           "propertyCount": 18
         }
       }
+    },
+    {
+      "t": "2026-07-19T13:17:52.253Z",
+      "seeded": false,
+      "cities": {
+        "Banff, AB": {
+          "medianPrice": 211,
+          "freeCancelRate": 0.667,
+          "instantBookRate": 0.667,
+          "propertyCount": 3
+        },
+        "Montreal, QC": {
+          "medianPrice": 95,
+          "freeCancelRate": 0.667,
+          "instantBookRate": 0.667,
+          "propertyCount": 3
+        },
+        "Tofino, BC": {
+          "medianPrice": 189,
+          "freeCancelRate": 0.667,
+          "instantBookRate": 0.667,
+          "propertyCount": 3
+        },
+        "Prince Edward County, ON": {
+          "medianPrice": 153.5,
+          "freeCancelRate": 0.5,
+          "instantBookRate": 1,
+          "propertyCount": 2
+        },
+        "Blue Mountain, ON": {
+          "medianPrice": 190,
+          "freeCancelRate": 1,
+          "instantBookRate": 0.5,
+          "propertyCount": 2
+        },
+        "Niagara-on-the-Lake, ON": {
+          "medianPrice": 228.5,
+          "freeCancelRate": 1,
+          "instantBookRate": 0.5,
+          "propertyCount": 2
+        },
+        "Toronto, ON": {
+          "medianPrice": 180.5,
+          "freeCancelRate": 0.722,
+          "instantBookRate": 0.778,
+          "propertyCount": 18
+        }
+      }
     }
   ],
-  "nextPollAt": "2026-07-19T14:07:17.562Z"
+  "nextPollAt": "2026-07-19T14:57:52.253Z"
 }

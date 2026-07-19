@@ -5,11 +5,26 @@ let client = null;
 
 export async function getDb() {
   if (!MONGODB_URI) return null;
-  if (!client) {
-    client = new MongoClient(MONGODB_URI);
-    await client.connect();
+  try {
+    if (!client) {
+      // Fail fast (3s) instead of hanging the request when the cluster is
+      // unreachable (bad URI, IP allowlist, offline).
+      client = new MongoClient(MONGODB_URI, { serverSelectionTimeoutMS: 3000 });
+      await client.connect();
+    }
+    return client.db();
+  } catch (err) {
+    // Degrade to "no Mongo" so callers fall back gracefully instead of 500ing.
+    // Reset the cached client so a later call can retry a fresh connection.
+    console.warn("Mongo unavailable, degrading to no-db:", err.message);
+    try {
+      await client?.close();
+    } catch {
+      /* ignore */
+    }
+    client = null;
+    return null;
   }
-  return client.db();
 }
 
 export async function insertTransaction(tx) {
