@@ -2,18 +2,22 @@
 Person C owns this file and everything in /ai-service.
 Exposes POST /coach - see docs/PRD.md section 12 for the contract.
 
-IMPORTANT: FreeSolo docs are TBD - confirm exact training/inference API
-before wiring up the real call. Until then this runs in STUB MODE:
-contract-correct responses, templated messages grounded in the user's
-actual numbers. The real implementation must hit the fine-tuned model
-(tone/timing generation), NOT do the opportunity-cost math - that lives
-in the backend (see PRD section 4).
+Real mode calls an OpenAI-compatible FreeSolo chat completions endpoint
+(FREESOLO_BASE_URL + "/chat/completions") with the fine-tuned FREESOLO_MODEL.
+If FREESOLO_API_KEY, FREESOLO_BASE_URL, or FREESOLO_MODEL is missing, or the
+real call fails for any reason, this falls back to STUB MODE: contract-correct
+responses, templated messages grounded in the user's actual numbers - so a
+demo never crashes on a flaky endpoint.
+
+Opportunity-cost math lives in the backend (see PRD section 4) - this service
+only does coaching tone/timing (and Suite Hearts personas).
 """
+import json
 import os
 import random
-
 from typing import Optional
 
+import requests
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
@@ -23,7 +27,9 @@ from personas import build_persona, chat_reply, compatibility_score
 load_dotenv()
 
 FREESOLO_API_KEY = os.getenv("FREESOLO_API_KEY", "")
-STUB_MODE = not FREESOLO_API_KEY
+FREESOLO_BASE_URL = os.getenv("FREESOLO_BASE_URL", "")
+FREESOLO_MODEL = os.getenv("FREESOLO_MODEL", "")
+STUB_MODE = not (FREESOLO_API_KEY and FREESOLO_BASE_URL and FREESOLO_MODEL)
 
 app = FastAPI()
 
@@ -79,35 +85,69 @@ STUB_TEMPLATES = {
 }
 
 
+def _stub_message(req: CoachRequest) -> str:
+    top = _top_category(req.spendSummary)
+    recoverable = (top or {}).get("recoverableSpend") or (top or {}).get("monthlyTotal") or 0
+    cat = ((top or {}).get("name") or "spending").replace("_", " ")
+
+    if recoverable > 0 and req.goalAmount > 0:
+        months_to_goal = max(1, round(req.goalAmount / recoverable))
+        months = "1 month" if months_to_goal == 1 else f"{months_to_goal} months"
+        template = random.choice(STUB_TEMPLATES.get(req.tone, STUB_TEMPLATES["encouraging"]))
+        return template.format(
+            cat=cat,
+            rec=f"{recoverable:.0f}",
+            goal=f"{req.goalAmount:.0f}",
+            months=months,
+        )
+    return (
+        "Prices moved in your favor today. Keep this pace and you're booking, not browsing."
+    )
+
+
+def _call_freesolo(req: CoachRequest) -> str:
+    """POST an OpenAI-compatible chat completion request to FreeSolo.
+
+    Raises on any failure (network error, bad status, unexpected response
+    shape) so the caller can fall back to a stub message instead of crashing.
+    """
+    payload = {
+        "model": FREESOLO_MODEL,
+        "messages": [
+            {
+                "role": "user",
+                "content": json.dumps(
+                    {
+                        "spendSummary": req.spendSummary,
+                        "goalAmount": req.goalAmount,
+                        "tone": req.tone,
+                    }
+                ),
+            }
+        ],
+        "temperature": 0.4,
+    }
+    headers = {"Authorization": f"Bearer {FREESOLO_API_KEY}"}
+    response = requests.post(
+        f"{FREESOLO_BASE_URL.rstrip('/')}/chat/completions",
+        json=payload,
+        headers=headers,
+        timeout=20,
+    )
+    response.raise_for_status()
+    data = response.json()
+    return data["choices"][0]["message"]["content"]
+
+
 @app.post("/coach")
 def coach(req: CoachRequest):
     if STUB_MODE:
-        top = _top_category(req.spendSummary)
-        recoverable = (top or {}).get("recoverableSpend") or (top or {}).get("monthlyTotal") or 0
-        cat = ((top or {}).get("name") or "spending").replace("_", " ")
+        return {"message": _stub_message(req)}
 
-        if recoverable > 0 and req.goalAmount > 0:
-            months_to_goal = max(1, round(req.goalAmount / recoverable))
-            months = "1 month" if months_to_goal == 1 else f"{months_to_goal} months"
-            template = random.choice(STUB_TEMPLATES.get(req.tone, STUB_TEMPLATES["encouraging"]))
-            return {
-                "message": template.format(
-                    cat=cat,
-                    rec=f"{recoverable:.0f}",
-                    goal=f"{req.goalAmount:.0f}",
-                    months=months,
-                )
-            }
-        # No usable spend data - fall back to a generic-but-on-brand line.
-        return {
-            "message": "Prices moved in your favor today. Keep this pace and you're booking, not browsing."
-        }
-
-    # TODO (Person C): real FreeSolo inference call goes here once docs are
-    # confirmed - fine-tuned model, structured prompt from spendSummary +
-    # goalAmount + tone. Do not silently fall back to a generic model in the
-    # demo path (PRD section 6, item 4).
-    raise NotImplementedError("FreeSolo inference not wired up yet")
+    try:
+        return {"message": _call_freesolo(req)}
+    except Exception:
+        return {"message": _stub_message(req)}
 
 
 @app.post("/persona")
