@@ -76,7 +76,7 @@ const DEMO_NOWCAST = {
     name: "Hotel Demand Index (HDX)",
     compositeLabel: "YONDER NOWCAST",
     inspiration:
-      "Jane Street Costco parking-lot proxy: prices + booking-policy shifts when ground-truth demand is unavailable.",
+      "Inspired by the Jane Street Costco parking lot proxy: prices and booking policy shifts stand in when true demand data is unavailable.",
     weights: { medianPrice: 0.6, inverseFreeCancel: 0.25, instantBook: 0.15 },
     pollIntervalMinutes: 100,
     signalRules: "Momentum over last 6 snapshots (~10h).",
@@ -85,14 +85,14 @@ const DEMO_NOWCAST = {
   events: [
     {
       id: "fifa-2026-toronto",
-      name: "FIFA World Cup 2026 — Toronto host city",
+      name: "FIFA World Cup 2026, Toronto host city",
       start: "2026-06-11T00:00:00.000Z",
       end: "2026-07-19T23:59:59.000Z",
       city: "Toronto, ON",
       expectedImpact: "heating",
       caseStudy:
-        "Toronto hosts FIFA 2026 matches. Our HDX runs above composite as prices firm and free-cancellation share falls — " +
-        "a demand proxy, not occupancy data.",
+        "Toronto hosts FIFA 2026 matches. Our HDX runs above composite as prices firm and the free cancellation share falls. " +
+        "This is a demand proxy, not occupancy data.",
       currentHdx: 108.4,
       momentum: 2.1,
       signal: "heating",
@@ -421,7 +421,7 @@ export default function NowcastView() {
         <section className="nowcast-panel">
           <h3>Methodology</h3>
           <p>{payload.methodology?.inspiration}</p>
-          <p>{payload.methodology?.name}: weighted blend of nightly median price (vs city baseline), inverse free-cancellation share, and instant-book share.</p>
+          <p>{payload.methodology?.name}: weighted blend of nightly median price (vs city baseline), inverse free cancellation share, and instant book share.</p>
           <ul className="nowcast-weights">
             <li>
               <span>Median price</span>

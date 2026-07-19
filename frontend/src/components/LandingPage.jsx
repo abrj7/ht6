@@ -105,7 +105,15 @@ function FlipCard({ src, index, target }) {
 export default function LandingPage({ onEnterDemo }) {
   const { loginWithRedirect } = useAuth0();
   const containerRef = useRef(null);
-  const [phase, setPhase] = useState("scatter"); // scatter | line | circle
+  // Respect reduced-motion: skip the fly-in and land straight on the circle,
+  // with the gate revealed, so nothing animates unbidden.
+  const reduceMotion = useMemo(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches,
+    []
+  );
+  const [phase, setPhase] = useState(reduceMotion ? "circle" : "scatter"); // scatter | line | circle
   const [size, setSize] = useState({ width: 0, height: 0 });
 
   // Theme (shared with the dashboard via localStorage "yonder-theme").
@@ -183,12 +191,20 @@ export default function LandingPage({ onEnterDemo }) {
     return () => el.removeEventListener("mousemove", onMove);
   }, [mouseX]);
 
-  // Intro sequence.
+  // Intro sequence (skipped under reduced-motion — we start on the circle).
   useEffect(() => {
+    if (reduceMotion) return;
     const t1 = setTimeout(() => setPhase("line"), 500);
     const t2 = setTimeout(() => setPhase("circle"), 2500);
     return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, []);
+  }, [reduceMotion]);
+
+  // Jump the virtual scroll to the arc so the gate is reachable without a
+  // wheel (keyboard users, reduced-motion, "scroll to explore" click).
+  const revealGate = () => {
+    scrollRef.current = MAX_SCROLL;
+    virtualScroll.set(MAX_SCROLL);
+  };
 
   const scatter = useMemo(
     () =>
@@ -323,9 +339,12 @@ export default function LandingPage({ onEnterDemo }) {
           transition={{ duration: 1 }}
           className="lp-intro-title"
         >
-          Every dollar you don't spend<br />is a place you could go.
+          Every dollar you don't <span className="lp-accent">spend</span>
+          <br />is a place you could go.
         </motion.h1>
-        <motion.p
+        <motion.button
+          type="button"
+          onClick={revealGate}
           initial={{ opacity: 0 }}
           animate={
             phase === "circle" && morphValue < 0.5
@@ -336,18 +355,21 @@ export default function LandingPage({ onEnterDemo }) {
           className="lp-intro-hint"
         >
           SCROLL TO EXPLORE
-        </motion.p>
+        </motion.button>
       </div>
 
       {/* Gate copy + buttons — fades in as the arc forms, centered on screen */}
       <div className="lp-center-layer lp-center-layer--gate">
-        <motion.div style={{ opacity: contentOpacity, y: contentY }} className="lp-gate-content">
+        <motion.div
+          style={reduceMotion ? { opacity: 1 } : { opacity: contentOpacity, y: contentY }}
+          className="lp-gate-content"
+        >
           <p className="lp-eyebrow">WELCOME TO YONDER</p>
           <h2 className="lp-gate-title">Your spending, as a passport.</h2>
           <p className="lp-gate-blurb">
-            Yonder quietly converts the money you'd otherwise leak into the cost
-            of a real trip — and moves a destination closer every time you skip a
-            spend. Members only. Sign in to open your board.
+            Yonder quietly turns the money you'd otherwise leak into the cost
+            of a real trip, and every time you skip a spend, a destination moves
+            closer. Members only. Sign in to open your board.
           </p>
           <div className="lp-gate-actions">
             <LiquidGlassButton onClick={startLogin}>Log in</LiquidGlassButton>

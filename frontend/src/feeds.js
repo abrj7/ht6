@@ -218,7 +218,7 @@ export const DEMO_MARKET = {
     "\u25BC YPEC 142.75 -21.00 (-12.8%)",
     "\u25B2 YBLU 128.50 +6.00 (+4.9%)",
     "\u25BC YNTL 289.00 -3.25 (-1.1%)",
-    "ARB ALERT: YPEC quoted 142.75\u2013168.00 across makers (17.7% spread)",
+    "ARB ALERT: YPEC quoted 142.75 to 168.00 across makers (17.7% spread)",
     "BUYING POWER 387.42 \u00B7 funded by cut spending",
   ],
 };

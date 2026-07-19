@@ -163,7 +163,7 @@ export default function DashboardView({
               <h2 className="goals-empty__title">Start your first goal</h2>
               <p className="goals-empty__body">
                 Yonder turns money you can redirect into a real trip. Add a spending
-                category you want to cut and the destination it should fund — Yonder tracks
+                category you want to cut and the destination it should fund. Yonder tracks
                 the live price and shows how fast you get there.
               </p>
               <TripSettings goals={goals} onChange={onGoalsChange} />
@@ -229,8 +229,11 @@ export default function DashboardView({
           <SpendInputForm onSpendUpdated={onSpendUpdated} goals={goals} />
 
           <section className="coach-card" aria-label="Coach">
-            <div className="coach-label">Coach</div>
-            <div className="coach-message">{coachMessage}</div>
+            <div className="coach-head">
+              <span className="coach-avatar" aria-hidden="true">🧭</span>
+              <span className="coach-label">Coach</span>
+            </div>
+            <div className="coach-message" aria-live="polite">{coachMessage}</div>
           </section>
 
           <GreenCard route={selectedRoute} />

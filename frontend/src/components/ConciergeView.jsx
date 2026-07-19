@@ -10,7 +10,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
 
 const STARTER_CHIPS = [
   "Hotels near Banff under $250",
-  "Plan a 3-day weekend in Banff",
+  "Plan a 3 day weekend in Banff",
   "Cheapest stay in Montreal",
   "Best time to visit and rough budget?",
 ];
@@ -25,7 +25,7 @@ const DEMO_CATALOG = [
     capacity: 4,
     bookUrl: "https://www.stay22.com",
     amenities: ["Hot tub", "Kitchen", "Mountain view", "Wi-Fi"],
-    nearestStation: "Banff Gondola — 2.1 km",
+    nearestStation: "Banff Gondola, 2.1 km",
     freeCancellation: true,
     why: "Strong guest ratings and fits your Banff budget.",
     score: 0.92,
@@ -40,7 +40,7 @@ const DEMO_CATALOG = [
     capacity: 3,
     bookUrl: "https://www.stay22.com",
     amenities: ["Hot tub", "Fireplace", "Parking"],
-    nearestStation: "Downtown Banff — 1.4 km",
+    nearestStation: "Downtown Banff, 1.4 km",
     freeCancellation: true,
     why: "Cheapest cabin near Banff with a hot tub.",
     score: 0.86,
@@ -55,7 +55,7 @@ const DEMO_CATALOG = [
     capacity: 2,
     bookUrl: "https://www.stay22.com",
     amenities: ["Breakfast", "Old Port views", "Wi-Fi"],
-    nearestStation: "Place-d'Armes — 450 m",
+    nearestStation: "Place-d'Armes, 450 m",
     freeCancellation: true,
     why: "Lowest quote in Montreal with free cancellation.",
     score: 0.88,
@@ -70,9 +70,9 @@ const DEMO_CATALOG = [
     capacity: 2,
     bookUrl: "https://www.stay22.com",
     amenities: ["Rooftop pool", "Garden terrace", "Gym"],
-    nearestStation: "Bonaventure — 200 m",
+    nearestStation: "Bonaventure, 200 m",
     freeCancellation: true,
-    why: "Iconic rooftop pool — great for families.",
+    why: "Iconic rooftop pool, great for families.",
     score: 0.84,
     destination: "Montreal, QC",
   },
@@ -85,9 +85,9 @@ const DEMO_CATALOG = [
     capacity: 4,
     bookUrl: "https://www.stay22.com",
     amenities: ["Indoor pool", "Kids club", "Parking"],
-    nearestStation: "Blue Mountain Village — 600 m",
+    nearestStation: "Blue Mountain Village, 600 m",
     freeCancellation: false,
-    why: "Family-friendly with pool access at Blue Mountain.",
+    why: "Family friendly with pool access at Blue Mountain.",
     score: 0.81,
     destination: "Blue Mountain, ON",
   },
@@ -100,9 +100,9 @@ const DEMO_CATALOG = [
     capacity: 2,
     bookUrl: "https://www.stay22.com",
     amenities: ["Wine bar", "Bicycle rental", "Wi-Fi"],
-    nearestStation: "Main Street PEC — 350 m",
+    nearestStation: "Main Street PEC, 350 m",
     freeCancellation: true,
-    why: "Top-rated boutique stay in Prince Edward County.",
+    why: "Top rated boutique stay in Prince Edward County.",
     score: 0.9,
     destination: "Prince Edward County, ON",
   },
@@ -115,7 +115,7 @@ const DEMO_CATALOG = [
     capacity: 2,
     bookUrl: "https://www.stay22.com",
     amenities: ["Spa", "Indoor pool", "Golf", "Fine dining"],
-    nearestStation: "Banff Upper Hot Springs — 1.8 km",
+    nearestStation: "Banff Upper Hot Springs, 1.8 km",
     freeCancellation: false,
     why: "Luxury landmark with full resort amenities.",
     score: 0.95,
@@ -143,7 +143,7 @@ function formatStation(station) {
   const bits = [name];
   if (line) bits.push(`(${line})`);
   const label = bits.join(" ");
-  return Number.isFinite(walkMinutes) ? `${label} — ${walkMinutes} min walk` : label;
+  return Number.isFinite(walkMinutes) ? `${label}, ${walkMinutes} min walk` : label;
 }
 
 // Hotel-search intent: only pull Stay22 cards when the user clearly asks about
@@ -171,8 +171,8 @@ function planningAnswer(query, ctx) {
     if (!place) {
       return {
         answer:
-          "I can build a day-by-day itinerary — which destination is it for? " +
-          "Tell me the city (and how many days), e.g. \"3 days in Banff\".",
+          "I can build a day by day itinerary. Which destination is it for? " +
+          "Tell me the city and how many days, like \"3 days in Banff\".",
         parsed: { intent: "planning", topic: "itinerary", query },
         results: [],
         mode: "demo",
@@ -183,15 +183,15 @@ function planningAnswer(query, ctx) {
     const daysMatch = q.match(/(\d+)\s*[- ]?\s*day/);
     const days = Math.min(5, Math.max(1, daysMatch ? Number(daysMatch[1]) : 3));
     const plan = [
-      `Day 1 — Arrive in ${place}, settle in, walk the main strip, easy dinner nearby.`,
-      `Day 2 — The headline day: a signature hike/gondola or a museum + neighbourhood crawl.`,
-      `Day 3 — Slower morning, a market or viewpoint, then head back.`,
-      `Day 4 — Day trip to a nearby spot or a second trail.`,
-      `Day 5 — Souvenirs + a relaxed final morning before departure.`,
+      `Day 1: Arrive in ${place}, settle in, walk the main strip, then grab an easy dinner nearby.`,
+      `Day 2: The headline day. A signature hike or gondola ride, or a museum and a neighbourhood crawl.`,
+      `Day 3: Slower morning, a market or viewpoint, then head back.`,
+      `Day 4: Day trip to a nearby spot or a second trail.`,
+      `Day 5: Souvenirs and a relaxed final morning before departure.`,
     ].slice(0, days);
     return {
       answer:
-        `Here's a ${days}-day ${place} itinerary:\n` +
+        `Here's a ${days} day ${place} itinerary:\n` +
         plan.join("\n") +
         `\n\nWant me to line up stays that fit this? Just say "find hotels in ${place}".`,
       parsed: { intent: "planning", topic: "itinerary", query, days },
@@ -205,8 +205,8 @@ function planningAnswer(query, ctx) {
   if (/budget|how much|cost/.test(q)) {
     return {
       answer:
-        `Rough weekend budget from Toronto: stays run ~$95–$390/night in the catalog, ` +
-        `so 2 nights + travel lands around $350–$900 per person depending on destination. ` +
+        `Rough weekend budget from Toronto: stays run about $95 to $390 a night in the catalog, ` +
+        `so two nights plus travel lands around $350 to $900 per person depending on destination. ` +
         `Cut recoverable spend (food delivery, subscriptions) and the dashboard shows how fast it funds the trip. ` +
         `Want me to pull the cheapest stays${place ? ` in ${place}` : ""}?`,
       parsed: { intent: "planning", topic: "budget", query },
@@ -219,8 +219,8 @@ function planningAnswer(query, ctx) {
   if (/when|best time|weather/.test(q)) {
     return {
       answer:
-        `${place || "Most Ontario/Alberta spots"} are best late spring–early fall for hiking and ` +
-        `Dec–Mar for ski towns like Blue Mountain and Banff. Weekends book up fastest, so lock dates early. ` +
+        `${place || "Most Ontario and Alberta spots"} are best from late spring to early fall for hiking, and ` +
+        `December to March for ski towns like Blue Mountain and Banff. Weekends book up fastest, so lock dates early. ` +
         `Tell me a destination and budget and I'll find stays.`,
       parsed: { intent: "planning", topic: "timing", query },
       results: [],
@@ -232,8 +232,8 @@ function planningAnswer(query, ctx) {
   if (/how many days|how long/.test(q)) {
     return {
       answer:
-        `A 2–3 day weekend is the sweet spot for ${place || "these trips"}. Two nights covers the ` +
-        `highlights without burning a whole week. Want a day-by-day itinerary or some stays?`,
+        `A two or three day weekend is the sweet spot for ${place || "these trips"}. Two nights covers the ` +
+        `highlights without burning a whole week. Want a day by day itinerary or some stays?`,
       parsed: { intent: "planning", topic: "duration", query },
       results: [],
       mode: "demo",
@@ -243,7 +243,7 @@ function planningAnswer(query, ctx) {
   }
   return {
     answer:
-      `Happy to help plan the trip — I can cover timing, budget, itinerary, or getting around, ` +
+      `Happy to help plan the trip. I can cover timing, budget, itinerary, or getting around, ` +
       `and pull matching stays from live Stay22 inventory when you're ready. What do you want to nail down first?`,
     parsed: { intent: "planning", topic: "general", query },
     results: [],
@@ -292,9 +292,9 @@ function demoAsk(query, ctx) {
 
   const answer =
     results.length === 0
-      ? "Nothing matched that filter — try widening your search or pick a starter question."
+      ? "Nothing matched that filter. Try widening your search or pick a starter question."
       : results.length === 1
-        ? `Top match: ${results[0].name} at ${formatPrice(results[0].price)}/night — ${results[0].why}`
+        ? `Top match: ${results[0].name} at ${formatPrice(results[0].price)} a night. ${results[0].why}`
         : `I found ${results.length} picks. Best value is ${results[0].name} at ${formatPrice(results[0].price)}/night.`;
 
   return {
@@ -467,7 +467,7 @@ export default function ConciergeView() {
           batch.unshift({
             id: nextId(),
             role: "system",
-            text: "Concierge warming up — demo exchange picks",
+            text: "Concierge is warming up, showing demo picks",
           });
         }
 
@@ -540,7 +540,7 @@ export default function ConciergeView() {
   return (
     <div className="cg-root">
       <header className="cg-header">
-        <span className="cg-title">Concierge — hotels &amp; trip planning</span>
+        <span className="cg-title">Concierge · hotels &amp; trip planning</span>
         <div className="cg-header-actions">
           <button
             type="button"
@@ -593,8 +593,8 @@ export default function ConciergeView() {
             {messages.length === 0 && !thinking && (
               <div className="cg-empty">
                 <strong>Ask anything</strong>
-                Hotel search over live Stay22 inventory <em>and</em> trip planning — timing, budget,
-                itineraries. Try a chip above, a follow-up like &ldquo;cheaper&rdquo;, or
+                Hotel search over live Stay22 inventory <em>and</em> trip planning: timing, budget,
+                itineraries. Try a chip above, ask something like &ldquo;cheaper&rdquo;, or
                 &ldquo;plan a weekend in Banff&rdquo;.
               </div>
             )}

@@ -284,7 +284,7 @@ export default function MapView() {
 
   const statsLine = useMemo(() => {
     if (!stats || !stats.count) return "no inventory";
-    return `${stats.count} properties · ${formatInt(stats.minPrice)}–${formatInt(stats.maxPrice)} · avg ${formatInt(stats.avgPrice)} · ${stats.arbCount} ARB`;
+    return `${stats.count} properties · ${formatInt(stats.minPrice)} to ${formatInt(stats.maxPrice)} · avg ${formatInt(stats.avgPrice)} · ${stats.arbCount} ARB`;
   }, [stats, formatInt]);
 
   const setFilter = (patch) => setFilters((f) => ({ ...f, ...patch }));
@@ -346,7 +346,7 @@ export default function MapView() {
               value={filters.min}
               onChange={(e) => setFilter({ min: e.target.value })}
             />
-            <span className="mv-pricedash">–</span>
+            <span className="mv-pricedash">to</span>
             <input
               className="mv-num"
               type="number"
@@ -386,7 +386,7 @@ export default function MapView() {
       </div>
 
       {offline && (
-        <div className="mv-banner">map feed offline — showing demo data</div>
+        <div className="mv-banner">map feed offline, showing demo data</div>
       )}
 
       <div className="mv-maparea">
@@ -402,7 +402,7 @@ export default function MapView() {
         {empty && (
           <div className="mv-overlay mv-overlay-empty">
             <div className="mv-empty">
-              no inventory matches — widen the filters
+              no inventory matches, try widening the filters
             </div>
           </div>
         )}

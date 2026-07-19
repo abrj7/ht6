@@ -86,7 +86,7 @@ body {
 }
 
 .brand {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-weight: 700;
   font-size: 1.5rem;
   letter-spacing: 0.02em;
@@ -98,7 +98,7 @@ body {
 }
 
 .tagline {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.62rem;
   color: var(--chalk-dim);
   letter-spacing: 0.06em;
@@ -124,7 +124,7 @@ body {
   background: none;
   border: none;
   border-left: 3px solid transparent;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -169,7 +169,7 @@ body {
 }
 
 .sidebar-foot__note {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.6rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -203,7 +203,7 @@ body {
 }
 
 .topbar-title {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -224,7 +224,7 @@ body {
   color: var(--chalk);
   border-radius: 999px;
   padding: 0.35rem 0.7rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.63rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -256,7 +256,7 @@ body {
   border: none;
   background: transparent;
   color: var(--chalk);
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.63rem;
   letter-spacing: 0.08em;
   cursor: pointer;
@@ -268,6 +268,18 @@ body {
   outline: none;
 }
 
+.currency-picker__select:focus-visible {
+  outline: 2px solid var(--flap-amber);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* Native dropdown list stays readable in dark mode */
+.currency-picker__select option {
+  background: var(--panel);
+  color: var(--chalk);
+}
+
 .theme-toggle:hover {
   transform: translateY(-1px);
   border-color: var(--flap-amber);
@@ -277,7 +289,7 @@ body {
   display: inline-flex;
   align-items: baseline;
   gap: 0.55rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   border: 1px solid rgba(176, 116, 23, 0.4);
   border-radius: 6px;
   padding: 0.3rem 0.65rem;
@@ -298,7 +310,7 @@ body {
 }
 
 .topbar-updated {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.66rem;
   letter-spacing: 0.06em;
   color: var(--chalk-dim);
@@ -406,7 +418,7 @@ body {
 }
 
 .feed-badge {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.62rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -423,7 +435,7 @@ body {
 
 /* ---- Uppercase mono microlabel ---- */
 .micro-label {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.62rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -530,7 +542,7 @@ body {
 }
 
 .portfolio-card__destination {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.8rem;
   font-weight: 700;
   color: var(--chalk);
@@ -543,7 +555,7 @@ body {
 }
 
 .portfolio-card__price {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--flap-amber);
@@ -594,7 +606,7 @@ body {
 }
 
 .chart-head__destination {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 1.35rem;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -626,7 +638,7 @@ body {
 }
 
 .linechart-tick {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 11px;
   fill: var(--chalk-dim);
   letter-spacing: 0.04em;
@@ -665,14 +677,14 @@ body {
 }
 
 .chart-goal__pct {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.86rem;
   font-weight: 700;
   color: var(--route-teal);
 }
 
 .chart-goal__note {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.68rem;
   color: var(--chalk-dim);
 }
@@ -713,7 +725,7 @@ body {
 }
 
 .watch-row__symbol {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -729,7 +741,7 @@ body {
 }
 
 .watch-row__last {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.78rem;
   font-weight: 700;
   color: var(--chalk);
@@ -767,7 +779,7 @@ body {
 }
 
 .green-stat__value {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--chalk);
@@ -791,7 +803,7 @@ body {
   grid-template-columns: 1.8fr 1.4fr 1.1fr 1.4fr 1.1fr;
   gap: 0.75rem;
   padding: 0 1.25rem 0.6rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.68rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -848,7 +860,7 @@ body {
 }
 
 .route-destination {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.85rem;
   color: var(--chalk-dim);
 }
@@ -866,7 +878,7 @@ body {
 
 /* ---- Split-flap number ---- */
 .flap {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-weight: 700;
   font-size: 1.15rem;
   color: var(--flap-glow);
@@ -903,7 +915,7 @@ body {
 
 /* ---- Price delta chip ---- */
 .delta-chip {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.03em;
@@ -948,7 +960,7 @@ body {
 }
 
 .route-progress__label {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.68rem;
   color: var(--chalk-dim);
   min-width: 2.6em;
@@ -986,7 +998,7 @@ body {
 }
 
 .tag {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.66rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1011,7 +1023,7 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem 1rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.75rem;
   color: var(--chalk-dim);
 }
@@ -1021,13 +1033,13 @@ body {
 }
 
 .detail-spend {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.75rem;
   color: var(--chalk-dim);
 }
 
 .book-now {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-weight: 700;
   font-size: 0.82rem;
   letter-spacing: 0.06em;
@@ -1053,7 +1065,7 @@ body {
 
 /* ---- Status pill ---- */
 .status {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.72rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1085,32 +1097,56 @@ body {
 
 /* ---- Coach message card ---- */
 .coach-card {
-  padding: 1.25rem 1.4rem;
+  padding: 1.15rem 1.3rem 1.25rem;
   border-radius: var(--radius);
-  background: linear-gradient(180deg, var(--panel) 0%, #faf9f6 100%);
+  /* Theme-safe amber wash — no hardcoded light stop (which bled white in
+     dark mode and swallowed the text). */
+  background:
+    linear-gradient(180deg, rgba(176, 116, 23, 0.06), transparent 60%),
+    var(--panel);
   border: 1px solid var(--panel-line);
   border-left: 3px solid var(--flap-amber);
 }
 
+.coach-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.coach-avatar {
+  width: 1.7rem;
+  height: 1.7rem;
+  flex: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(176, 116, 23, 0.16);
+  border: 1px solid rgba(176, 116, 23, 0.35);
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
 .coach-label {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.7rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--flap-amber);
-  margin-bottom: 0.5rem;
 }
 
 .coach-message {
-  font-size: 0.98rem;
-  line-height: 1.55;
+  font-size: 0.95rem;
+  line-height: 1.6;
   color: var(--chalk);
 }
 
 /* ---- Footer meta ---- */
 .meta {
   margin-top: 1.5rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.7rem;
   color: var(--chalk-dim);
   display: flex;
@@ -1121,7 +1157,7 @@ body {
 
 /* ---- Loading state (used by the MapView placeholder) ---- */
 .loading {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   color: var(--chalk-dim);
   font-size: 0.85rem;
 }
@@ -1157,7 +1193,7 @@ body {
 }
 
 .tape-item {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.72rem;
   letter-spacing: 0.04em;
   color: var(--chalk-dim);
@@ -1196,7 +1232,7 @@ body {
 }
 
 .power-amount {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-weight: 700;
   font-size: 1.7rem;
   color: var(--flap-amber);
@@ -1221,7 +1257,7 @@ body {
 }
 
 .power-reach {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.72rem;
   color: var(--chalk-dim);
 }
@@ -1289,7 +1325,7 @@ body {
 }
 
 .ticker-symbol {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-weight: 700;
   font-size: 1.15rem;
   letter-spacing: 0.08em;
@@ -1298,7 +1334,7 @@ body {
 }
 
 .ticker-destination {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.66rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1313,7 +1349,7 @@ body {
 }
 
 .mover-tag {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.6rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -1322,7 +1358,7 @@ body {
 }
 
 .arb-badge {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -1341,7 +1377,7 @@ body {
 }
 
 .ticker-last {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-weight: 700;
   font-size: 1.55rem;
   color: var(--flap-text);
@@ -1354,7 +1390,7 @@ body {
 }
 
 .change-chip {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.74rem;
   font-weight: 600;
   letter-spacing: 0.03em;
@@ -1389,7 +1425,7 @@ body {
 }
 
 .ticker-range__values {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.74rem;
   color: var(--chalk);
 }
@@ -1408,7 +1444,7 @@ body {
 }
 
 .book-row td {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.74rem;
   color: var(--chalk);
   padding: 0.32rem 0;
@@ -1484,7 +1520,7 @@ body {
 }
 
 .order-property__meta {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.7rem;
   color: var(--chalk-dim);
   text-transform: capitalize;
@@ -1496,7 +1532,7 @@ body {
 }
 
 .buy-cta {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-weight: 700;
   font-size: 0.8rem;
   letter-spacing: 0.06em;
@@ -1679,7 +1715,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.7rem;
 }
 
@@ -1754,7 +1790,7 @@ body {
   color: var(--chalk-dim);
   border-radius: 999px;
   padding: 0.15rem 0.6rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.58rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1767,7 +1803,8 @@ body {
 }
 
 .trip-settings__summary {
-  margin: 0.5rem 0 0;
+  margin: 0;
+  padding: 0.8rem 1.1rem 0.95rem;
   font-size: 0.78rem;
   color: var(--chalk-dim);
   line-height: 1.5;
@@ -1780,8 +1817,8 @@ body {
 .trip-settings__form {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  margin-top: 0.6rem;
+  gap: 0.75rem;
+  padding: 0.85rem 1.1rem 1.05rem;
 }
 
 .trip-settings__all {
@@ -1791,7 +1828,7 @@ body {
 
 .trip-settings__all summary {
   cursor: pointer;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.6rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1816,7 +1853,7 @@ body {
 .goal-row {
   display: grid;
   grid-template-columns: 1fr 1fr 4.5rem auto;
-  gap: 0.35rem;
+  gap: 0.45rem;
   align-items: center;
 }
 
@@ -1826,7 +1863,7 @@ body {
   color: var(--chalk);
   border-radius: 5px;
   padding: 0.3rem 0.4rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.66rem;
   min-width: 0;
 }
@@ -1851,19 +1888,31 @@ body {
 .goal-add {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.5rem;
   border-top: 1px dashed var(--panel-line);
-  padding-top: 0.6rem;
+  padding-top: 0.85rem;
+  margin-top: 0.2rem;
 }
 
 .goal-add input {
   border: 1px solid var(--panel-line);
   background: var(--panel);
   color: var(--chalk);
-  border-radius: 5px;
-  padding: 0.4rem 0.5rem;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
+  border-radius: 6px;
+  padding: 0.5rem 0.6rem;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+}
+
+/* Compact the Add-goal CTA — the base .button is a fat 999px pill that
+   dominated the panel. */
+.goal-add .button--primary {
+  align-self: flex-start;
+  margin-top: 0.15rem;
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.74rem;
+  font-weight: 600;
 }
 
 /* ---------------- Empty-state hero ---------------- */
@@ -1977,7 +2026,7 @@ body {
 
 .error-boundary__msg {
   margin: 0;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.8rem;
   color: var(--chalk-dim);
   word-break: break-word;

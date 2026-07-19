@@ -33,7 +33,7 @@
 }
 
 .nowcast-gauge__label {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -48,7 +48,7 @@
 }
 
 .nowcast-gauge__value {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 2.4rem;
   font-weight: 700;
   color: var(--chalk);
@@ -69,7 +69,7 @@
   margin-top: 0.65rem;
   padding: 0.25rem 0.65rem;
   border-radius: 999px;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -156,7 +156,7 @@
 }
 
 .nowcast-chart-tick {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 9px;
   fill: var(--chalk-dim);
 }
@@ -192,14 +192,14 @@
 }
 
 .nowcast-city__symbol {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.72rem;
   font-weight: 700;
   color: var(--flap-amber);
 }
 
 .nowcast-city__hdx {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 1.35rem;
   font-weight: 700;
   color: var(--chalk);
@@ -220,7 +220,7 @@
 }
 
 .nowcast-city__stats dt {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.6rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -228,7 +228,7 @@
 
 .nowcast-city__stats dd {
   margin: 0;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   color: var(--chalk);
   text-align: right;
 }
@@ -254,7 +254,7 @@
 
 .nowcast-panel h3 {
   margin: 0 0 0.75rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -288,7 +288,7 @@
 }
 
 .nowcast-weights span:last-child {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-weight: 700;
   color: var(--flap-amber);
 }
@@ -311,7 +311,7 @@
 }
 
 .nowcast-event__meta {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.65rem;
   color: var(--route-teal);
   margin-bottom: 0.5rem;
@@ -328,7 +328,7 @@
 }
 
 .nowcast-feed-badge {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.1em;

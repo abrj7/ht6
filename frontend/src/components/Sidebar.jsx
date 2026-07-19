@@ -61,17 +61,6 @@ const ICONS = {
       <circle cx="14.5" cy="2.5" r="1.1" fill="currentColor" />
     </svg>
   ),
-  match: (
-    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
-      <path
-        d="M8 13.5S2 9.9 2 6.2C2 4.2 3.6 3 5.2 3c1.2 0 2.2.6 2.8 1.6C8.6 3.6 9.6 3 10.8 3 12.4 3 14 4.2 14 6.2c0 3.7-6 7.3-6 7.3z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-      />
-    </svg>
-  ),
 };
 
 const NAV_ITEMS = [
@@ -80,7 +69,6 @@ const NAV_ITEMS = [
   { id: "map", label: "Map" },
   { id: "concierge", label: "Concierge" },
   { id: "nowcast", label: "Nowcast" },
-  { id: "match", label: "Match" },
 ];
 
 export default function Sidebar({ view, onNavigate, feedLabel, feedIsLive }) {
@@ -110,7 +98,7 @@ export default function Sidebar({ view, onNavigate, feedLabel, feedIsLive }) {
 
       <div className="sidebar-foot">
         <span className={`feed-badge${feedIsLive ? " feed-badge--live" : ""}`}>{feedLabel}</span>
-        <span className="sidebar-foot__note">prices on a 10-min cache</span>
+        <span className="sidebar-foot__note">prices refresh every 10 minutes</span>
       </div>
     </aside>
   );

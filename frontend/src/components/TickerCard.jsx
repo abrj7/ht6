@@ -84,7 +84,7 @@ export default function TickerCard({ ticker, moverDir, buyingPower, expanded, on
             {ticker.dayRange && Number.isFinite(ticker.dayRange.low)
               ? money(ticker.dayRange.low)
               : "\u2014"}
-            {" \u2013 "}
+            {" to "}
             {ticker.dayRange && Number.isFinite(ticker.dayRange.high)
               ? money(ticker.dayRange.high)
               : "\u2014"}

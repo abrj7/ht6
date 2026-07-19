@@ -93,8 +93,8 @@ export default function ExchangeView({ market, live, lastUpdated, focusSymbol })
 
       <div className="meta">
         <span>
-          {live ? "Live from backend" : "Demo data (backend offline)"} · quotes on a
-          10-minute cache · for travelers, down is up
+          {live ? "Live from backend" : "Demo data (backend offline)"} · quotes refresh
+          every 10 minutes · for travelers, down is up
         </span>
         {lastUpdated && <span>Last updated {lastUpdated.toLocaleTimeString()}</span>}
       </div>

@@ -8,7 +8,6 @@ import MapView from "./components/MapView.jsx";
 import ConciergeView from "./components/ConciergeView.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import NowcastView from "./components/NowcastView.jsx";
-import MatchView from "./components/MatchView.jsx";
 import LandingPage from "./components/LandingPage.jsx";
 import { useOpportunity, useMarket } from "./feeds.js";
 import { loadGoals, saveGoals } from "./tripConfig.js";
@@ -159,7 +158,6 @@ export default function App() {
             </ErrorBoundary>
           )}
           {view === "nowcast" && <NowcastView />}
-          {view === "match" && <MatchView />}
         </main>
       </div>
     </div>

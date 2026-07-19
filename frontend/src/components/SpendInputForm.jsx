@@ -104,6 +104,9 @@ export default function SpendInputForm({ onSpendUpdated, goals = [] }) {
           <span>Amount</span>
           <input
             type="number"
+            name="amount"
+            inputMode="decimal"
+            autoComplete="off"
             step="0.01"
             min="0"
             value={amount}
@@ -116,9 +119,12 @@ export default function SpendInputForm({ onSpendUpdated, goals = [] }) {
           <span>Merchant</span>
           <input
             type="text"
+            name="merchant"
+            autoComplete="off"
+            spellCheck={false}
             value={merchant}
             onChange={(event) => setMerchant(event.target.value)}
-            placeholder="UberEats, Netflix, etc."
+            placeholder="e.g. UberEats, Netflix…"
           />
         </label>
 
@@ -128,7 +134,7 @@ export default function SpendInputForm({ onSpendUpdated, goals = [] }) {
             className="button button--primary"
             disabled={!canSubmit || loading || authLoading}
           >
-            {loading ? "Saving..." : "Save spend"}
+            {loading ? "Saving…" : "Save spend"}
           </button>
           <p className="spend-note">
             {!AUTH_CONFIGURED
@@ -136,7 +142,7 @@ export default function SpendInputForm({ onSpendUpdated, goals = [] }) {
               : isAuthenticated
               ? note
               : authLoading
-              ? "Checking authentication..."
+              ? "Checking authentication…"
               : "Log in to submit spend and keep it tied to your Auth0 profile."}
           </p>
         </div>

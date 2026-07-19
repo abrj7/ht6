@@ -25,7 +25,7 @@ function DeltaChip({ delta }) {
   return (
     <span
       className={`delta-chip ${dropped ? "delta-chip--down" : "delta-chip--up"}`}
-      title={dropped ? "Price dropped since yesterday - you're closer to the goal" : "Price rose since yesterday"}
+      title={dropped ? "Price dropped since yesterday, so you're closer to the goal" : "Price rose since yesterday"}
     >
       {dropped ? "\u25BC" : "\u25B2"} {formatInt(Math.abs(delta))}
     </span>

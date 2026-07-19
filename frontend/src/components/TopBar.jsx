@@ -10,19 +10,15 @@ const TITLES = {
   map: "Market Map",
   concierge: "Concierge",
   nowcast: "Economic Nowcast",
-  match: "Suite Hearts",
 };
 
 export default function TopBar({ view, buyingPower, lastUpdated, theme, onToggleTheme }) {
-  const { code, setCode, currency, format } = useCurrency();
+  const { code, setCode, format } = useCurrency();
   return (
     <div className="topbar">
       <h1 className="topbar-title">{TITLES[view] || "Yonder"}</h1>
       <div className="topbar-right">
         <label className="currency-picker" title="Display currency (static rates)">
-          <span className="currency-picker__flag" aria-hidden="true">
-            {currency.flag}
-          </span>
           <select
             className="currency-picker__select"
             value={code}
@@ -31,7 +27,7 @@ export default function TopBar({ view, buyingPower, lastUpdated, theme, onToggle
           >
             {CURRENCIES.map((c) => (
               <option key={c.code} value={c.code}>
-                {c.flag} {c.code} — {c.name}
+                {c.flag} {c.code} · {c.name}
               </option>
             ))}
           </select>

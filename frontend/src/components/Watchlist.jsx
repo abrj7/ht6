@@ -54,7 +54,7 @@ export default function Watchlist({ tickers, onOpenExchange }) {
               type="button"
               className="watch-row"
               onClick={() => onOpenExchange(t.symbol)}
-              title={`${t.destination} \u2014 open in Exchange`}
+              title={`Open ${t.destination} in the Exchange`}
             >
               <span className="watch-row__symbol">{t.symbol}</span>
               <span className="watch-row__spark">

@@ -66,6 +66,7 @@ export default function TripSettings({ goals, onChange }) {
                     className="goal-row__amt"
                     type="number"
                     min="1"
+                    inputMode="decimal"
                     value={g.amount}
                     aria-label="Monthly amount"
                     onChange={(e) => editGoal(g.id, { amount: Number(e.target.value) })}
@@ -88,20 +89,26 @@ export default function TripSettings({ goals, onChange }) {
             <span className="micro-label">Add a goal</span>
             <input
               type="text"
-              placeholder="Category (e.g. Coffee, Rideshare)"
+              aria-label="New goal category"
+              autoComplete="off"
+              placeholder="Category, e.g. Coffee, Rideshare…"
               value={draft.category}
               onChange={(e) => setDraft((d) => ({ ...d, category: e.target.value }))}
             />
             <input
               type="text"
-              placeholder="Destination (e.g. Lisbon, Portugal)"
+              aria-label="New goal destination"
+              autoComplete="off"
+              placeholder="Destination, e.g. Lisbon, Portugal…"
               value={draft.destination}
               onChange={(e) => setDraft((d) => ({ ...d, destination: e.target.value }))}
             />
             <input
               type="number"
               min="1"
-              placeholder="$ / month"
+              inputMode="decimal"
+              aria-label="New goal monthly amount"
+              placeholder="$ / month…"
               value={draft.amount}
               onChange={(e) => setDraft((d) => ({ ...d, amount: e.target.value }))}
               onKeyDown={(e) => {
