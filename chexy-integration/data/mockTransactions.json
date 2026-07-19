@@ -364,5 +364,40 @@
     "date": "2026-07-19",
     "merchant": "Manual entry",
     "userId": "demo"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 25,
+    "date": "2026-07-19",
+    "merchant": "UberEats",
+    "userId": "demo"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 888,
+    "date": "2026-07-19",
+    "merchant": "Manual entry",
+    "userId": "demo"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 200,
+    "date": "2026-07-19",
+    "merchant": "Manual entry",
+    "userId": "demo"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 100,
+    "date": "2026-07-19",
+    "merchant": "Manual entry",
+    "userId": "demo"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 100,
+    "date": "2026-07-19",
+    "merchant": "Manual entry",
+    "userId": "demo"
   }
 ]

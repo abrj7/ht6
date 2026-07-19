@@ -33,6 +33,15 @@ const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://localhost:5001";
 const CHEXY_SERVICE_URL = process.env.CHEXY_SERVICE_URL || "http://localhost:5002";
 const USE_REAL_STAY22 = Boolean(process.env.STAY22_API_KEY);
 
+// Free LLM for the conversational concierge (Groq, OpenAI-compatible). The LLM
+// handles chat/planning and calls the search_stays tool to ground answers in
+// live Stay22 prices. Leave GROQ_API_KEY blank to disable (frontend falls back
+// to template replies).
+const GROQ_API_KEY = process.env.GROQ_API_KEY || "";
+const GROQ_BASE_URL = process.env.GROQ_BASE_URL || "https://api.groq.com/openai/v1";
+const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+const LLM_ENABLED = Boolean(GROQ_API_KEY);
+
 // User origin for the green/carbon layer (demo assumption: Toronto).
 const ORIGIN = { lat: 43.6532, lng: -79.3832 };
 
@@ -79,7 +88,10 @@ function recordPrice(destination, price) {
   if (typeof price !== "number") return;
   let hist = priceHistory.get(destination);
   if (!hist) {
-    hist = USE_REAL_STAY22 ? [] : seedBackdatedHistory(price);
+    // Seed backdated points in BOTH modes. Stay22 is snapshot-only and sits on
+    // a ~10-min cache, so live mode would otherwise start with 0-1 points and
+    // the chart would render "waiting for price history" indefinitely.
+    hist = seedBackdatedHistory(price);
     priceHistory.set(destination, hist);
   }
   // Near-simultaneous fetches (different cache keys) update the same point
@@ -110,17 +122,24 @@ function getPriceDelta(destination) {
 const STAY22_CACHE_MS = 10 * 60 * 1000;
 const stay22Cache = new Map(); // cacheKey -> { data, fetchedAt }
 
-async function getAccommodations(address, { type, min, max } = {}) {
+async function getAccommodations(address, { type, min, max, lat, lng } = {}) {
   knownDestinations.add(address);
-  const key = [address, type ?? "", min ?? "", max ?? ""].join("|");
+  const hasCenter = Number.isFinite(lat) && Number.isFinite(lng);
+  const key = [address, type ?? "", min ?? "", max ?? "", hasCenter ? `${lat},${lng}` : ""].join("|");
   const cached = stay22Cache.get(key);
   if (cached && Date.now() - cached.fetchedAt < STAY22_CACHE_MS) {
     return cached.data;
   }
   const { checkin, checkout } = nextWeekendDates();
-  const data = USE_REAL_STAY22
-    ? await searchAccommodations({ address, checkin, checkout, min, max, type })
+  let data = USE_REAL_STAY22
+    ? await searchAccommodations({ address, lat, lng, checkin, checkout, min, max, type })
     : mockSearchAccommodations({ address, type });
+  // Live Stay22 has no inventory for some catalog cities (e.g. Prince Edward
+  // County). Rather than render a priceless row, fall back to mock pricing so
+  // every destination always shows a number + chart.
+  if (USE_REAL_STAY22 && !(data.results ?? []).length) {
+    data = mockSearchAccommodations({ address, type });
+  }
   stay22Cache.set(key, { data, fetchedAt: Date.now() });
   // Only untyped searches feed the per-destination series so the history
   // isn't polluted by "hostels only" vs "villas only" price swings.
@@ -169,28 +188,44 @@ function bestValueProperty(results) {
 
 function propertySummary(p) {
   if (!p) return null;
+  const rating =
+    typeof p.rating === "object" && p.rating ? p.rating.value ?? null : p.rating ?? null;
+  const capacity =
+    typeof p.capacity === "object" && p.capacity ? p.capacity.guests ?? null : p.capacity ?? null;
   return {
     name: p.name ?? null,
     type: p.type ?? null,
-    rating: p.rating ?? null,
-    capacity: p.capacity ?? null,
+    rating,
+    capacity,
     freeCancellation: p.policies?.freeCancellation ?? null,
     instantBook: p.policies?.instantBook ?? null,
+    image: p.media?.thumbnail ?? null,
+    images: p.media?.thumbnail ? [p.media.thumbnail] : [],
   };
 }
 
 // ---------------------------------------------------------------------------
 // Book-now affiliate links
 // ---------------------------------------------------------------------------
+// Link for the exact supplier offer we quoted as cheapest, so the price on
+// the dashboard matches what the user sees after clicking Book now. Falls back
+// to the property-level aggregator page only if no per-supplier link exists.
+function cheapestSupplierLink(property) {
+  const priced = Object.values(property?.suppliers ?? {})
+    .filter((s) => typeof s?.price?.total === "number" && (s.link || s.deeplink || s.url))
+    .sort((a, b) => a.price.total - b.price.total);
+  const best = priced[0];
+  return best ? best.link || best.deeplink || best.url : null;
+}
+
 function buildBookUrl(property, destination, checkin, checkout) {
-  // Real API responses may carry a deeplink; prefer it when present.
+  // Prefer the specific cheapest-supplier offer so the booking page shows the
+  // same number the dashboard quoted; then any property deeplink; then roam.
   const deeplink =
+    cheapestSupplierLink(property) ||
     property?.deeplink ||
     property?.bookingUrl ||
-    property?.url ||
-    Object.values(property?.suppliers ?? {})
-      .map((s) => s?.deeplink || s?.url)
-      .find(Boolean);
+    property?.url;
   if (deeplink) return deeplink;
   return `https://www.stay22.com/allez/roundtrip?aid=yonder&address=${encodeURIComponent(
     destination
@@ -256,9 +291,11 @@ function greenInfo(destination) {
 // ---------------------------------------------------------------------------
 // Sibling services (graceful when down)
 // ---------------------------------------------------------------------------
-async function getSpendSummary() {
+async function getSpendSummary(userId = "demo") {
   try {
-    const res = await fetch(`${CHEXY_SERVICE_URL}/spend-summary?userId=demo`);
+    const res = await fetch(
+      `${CHEXY_SERVICE_URL}/spend-summary?userId=${encodeURIComponent(userId)}`
+    );
     if (!res.ok) throw new Error(`chexy-integration ${res.status}`);
     return await res.json();
   } catch {
@@ -284,8 +321,9 @@ async function getCoachMessage(spendSummary, goalAmount, tone = "encouraging") {
 // ---------------------------------------------------------------------------
 // Route rows for the departure board: one per spend category.
 // ---------------------------------------------------------------------------
-async function buildRoute({ category, monthlyTotal, recoverableSpend }) {
-  const destination = CATEGORY_DESTINATIONS[category] ?? "Banff, AB";
+async function buildRoute({ category, monthlyTotal, recoverableSpend, destination: override }) {
+  // User-set destination (from Trip settings) wins over the demo default map.
+  const destination = override || CATEGORY_DESTINATIONS[category] || "Banff, AB";
   const { checkin, checkout } = nextWeekendDates();
   const spendBase = recoverableSpend ?? monthlyTotal;
 
@@ -320,7 +358,18 @@ async function buildRoute({ category, monthlyTotal, recoverableSpend }) {
 // GET /api/opportunity?category=food_delivery&amount=150&type=cabin
 // Contract (docs/PRD.md section 12) - LOCKED, frontend builds against this shape.
 app.get("/api/opportunity", async (req, res) => {
-  const { category, amount, type } = req.query;
+  const {
+    category,
+    amount,
+    type,
+    destination: destParam,
+    destinations: destsParam,
+    goals: goalsParam,
+    userId: userIdParam,
+  } = req.query;
+  // Which profile's spend drives the board. "demo" = the showcase sandbox;
+  // a logged-in user sends their Auth0 sub so they see only their own data.
+  const userId = userIdParam || "demo";
   if (!category || !amount) {
     return res.status(400).json({ error: "category and amount required" });
   }
@@ -329,8 +378,30 @@ app.get("/api/opportunity", async (req, res) => {
     return res.status(400).json({ error: "amount must be a positive number" });
   }
 
+  // Per-category destination overrides from the frontend Trip settings.
+  // `destinations` is a JSON map {category: "City, XX"}; `destination` is a
+  // shorthand override for the requested category only.
+  let destinationOverrides = {};
   try {
-    const destination = CATEGORY_DESTINATIONS[category] ?? "Banff, AB";
+    if (destsParam) destinationOverrides = JSON.parse(destsParam) || {};
+  } catch {
+    return res.status(400).json({ error: "destinations must be valid JSON" });
+  }
+  if (destParam) destinationOverrides[category] = destParam;
+
+  // User-defined goals (Trip settings). Each = { category, destination, amount }.
+  // When present they drive the board directly, replacing the chexy-derived
+  // category rows so the user sees only the buckets/destinations they created.
+  let goals = null;
+  try {
+    if (goalsParam) goals = JSON.parse(goalsParam);
+  } catch {
+    return res.status(400).json({ error: "goals must be valid JSON" });
+  }
+
+  try {
+    const destination =
+      destinationOverrides[category] || CATEGORY_DESTINATIONS[category] || "Banff, AB";
     const { checkin, checkout } = nextWeekendDates();
     // Budget band around the recoverable amount so results are actually reachable.
     const budget = {
@@ -340,7 +411,7 @@ app.get("/api/opportunity", async (req, res) => {
 
     const [stay22, spendSummary] = await Promise.all([
       getAccommodations(destination, { type, ...budget }),
-      getSpendSummary(),
+      getSpendSummary(userId),
     ]);
 
     const properties = (stay22.results ?? []).map((p) => ({
@@ -380,13 +451,26 @@ app.get("/api/opportunity", async (req, res) => {
 
     // One route row per category. If chexy is down, still serve a row for the
     // requested category so the board isn't empty.
-    const categoryRows = spendSummary?.categories?.length
-      ? spendSummary.categories.map((c) => ({
-          category: c.name,
-          monthlyTotal: c.monthlyTotal,
-          recoverableSpend: c.recoverableSpend ?? null,
-        }))
-      : [{ category, monthlyTotal: recoverable, recoverableSpend: null }];
+    const categoryRows =
+      Array.isArray(goals) && goals.length
+        ? goals.map((g) => {
+            const amt = Number(g.amount);
+            const monthly = Number.isFinite(amt) && amt > 0 ? amt : recoverable;
+            return {
+              category: g.category || "Savings",
+              monthlyTotal: monthly,
+              recoverableSpend: monthly,
+              destination: g.destination || null,
+            };
+          })
+        : spendSummary?.categories?.length
+        ? spendSummary.categories.map((c) => ({
+            category: c.name,
+            monthlyTotal: c.monthlyTotal,
+            recoverableSpend: c.recoverableSpend ?? null,
+            destination: destinationOverrides[c.name] || null,
+          }))
+        : [{ category, monthlyTotal: recoverable, recoverableSpend: null, destination }];
 
     const routes = [];
     for (const row of categoryRows) {
@@ -424,8 +508,12 @@ app.post("/api/spend", async (req, res) => {
       : parsed.toISOString().slice(0, 10);
   })();
 
+  // A verified Auth0 user (sub from the JWT) always wins over any body value,
+  // so a logged-in user's spend is tied to their profile and can't be spoofed.
+  // Unauthenticated (demo mode) falls back to the body userId or "demo".
+  const resolvedUserId = req.auth?.payload?.sub || userId || "demo";
   const payload = {
-    userId: userId || "demo",
+    userId: resolvedUserId,
     category: category.trim(),
     amount: Math.round(spendAmount * 100) / 100,
     merchant: merchant ? String(merchant).trim() : "Manual entry",
@@ -671,15 +759,41 @@ function mapProperty(p, city, checkin, checkout) {
   if (!book.length) return null; // no priced supplier - nothing to pin
   const spread = spreadFromBook(book);
   const spreadPct = spread ? spread.spreadPct : 0;
+
+  // Live Stay22 nests coordinates under location.coordinates; mock uses
+  // location.lat/lng. Support both, or there are no pins to place.
+  const coords = p.location?.coordinates ?? p.location ?? {};
+  const lat = coords.lat ?? coords.latitude ?? null;
+  const lng = coords.lng ?? coords.longitude ?? null;
+
+  // rating/capacity come back as objects from live Stay22 - flatten so the map
+  // popup and rating filter get plain numbers.
+  const rating =
+    typeof p.rating === "object" && p.rating ? p.rating.value ?? null : p.rating ?? null;
+  const capacity =
+    typeof p.capacity === "object" && p.capacity ? p.capacity.guests ?? null : p.capacity ?? null;
+
+  // book prices are the whole-stay total (2 nights); show per-night so the
+  // "price / night" filter and pill labels are correct.
+  const nights = Math.max(1, Math.round((Date.parse(checkout) - Date.parse(checkin)) / 86400000));
+  const nightly = Math.round(book[0].price / nights);
+
   return {
     id: p.id ?? null,
     name: p.name ?? null,
     type: p.type ?? null,
-    lat: p.location?.lat ?? p.location?.latitude ?? null,
-    lng: p.location?.lng ?? p.location?.longitude ?? null,
-    price: book[0].price, // cheapest nightly total across suppliers
-    rating: p.rating ?? null,
-    capacity: p.capacity ?? null,
+    lat,
+    lng,
+    // Stay22 search returns a single thumbnail per property (no gallery via
+    // this endpoint). image = that thumbnail; images = a 1-item array the UI
+    // renders as a (single-slide) carousel, ready for more if a details API
+    // is added later.
+    image: p.media?.thumbnail ?? null,
+    images: p.media?.thumbnail ? [p.media.thumbnail] : [],
+    price: nightly,
+    totalStay: book[0].price,
+    rating,
+    capacity,
     supplier: book[0].supplier,
     spreadPct,
     arb: spreadPct >= 15,
@@ -691,13 +805,17 @@ function mapProperty(p, city, checkin, checkout) {
 
 // GET /api/map?city=Toronto&type=hostel&min=50&max=150&minRating=8
 app.get("/api/map", async (req, res) => {
-  const city = resolveCity(req.query.city ?? "Toronto");
-  if (!city) {
-    return res.status(404).json({
-      error: `unknown city: ${req.query.city}`,
-      availableCities: MAP_CITIES,
-    });
+  const cityInput = String(req.query.city ?? "Toronto, ON").trim();
+  // Known catalog city -> use its downtown centre coords (tight, downtown
+  // results). Unknown text -> in live mode, pass it straight to Stay22 as an
+  // address so ANY city/area the API covers works. Mock mode can only serve
+  // the catalog, so it still 404s on unknown.
+  const known = resolveCity(cityInput);
+  if (!known && !USE_REAL_STAY22) {
+    return res.status(404).json({ error: `unknown city: ${cityInput}`, availableCities: MAP_CITIES });
   }
+  const label = known || cityInput;
+  const knownCenter = known ? CITY_CENTERS[known] : null;
 
   const { type } = req.query;
   const num = (v) => (v !== undefined && Number.isFinite(Number(v)) ? Number(v) : null);
@@ -708,25 +826,19 @@ app.get("/api/map", async (req, res) => {
   try {
     const { checkin, checkout } = nextWeekendDates();
 
-    // Unfiltered pass always runs: it feeds the shared cache/price history
-    // and gives the UNFILTERED bounds the UI needs to build filter controls.
-    const unfiltered = await getAccommodations(city);
-    let results = unfiltered.results ?? [];
+    // One fetch, centred downtown for known cities. All filtering is local on
+    // per-night price (Stay22's min/max are whole-stay totals, so pushing the
+    // per-night filter upstream would be wrong).
+    const data = await getAccommodations(label, {
+      lat: knownCenter?.lat,
+      lng: knownCenter?.lng,
+    });
 
-    // Live mode pushes the filters upstream (Stay22 supports min/max/type);
-    // mock mode just filters the catalog locally below.
-    if (USE_REAL_STAY22 && (type || min !== null || max !== null)) {
-      const narrowed = await getAccommodations(city, { type, min, max });
-      results = narrowed.results ?? [];
-    }
-
-    const allPins = (unfiltered.results ?? [])
-      .map((p) => mapProperty(p, city, checkin, checkout))
+    const allPins = (data.results ?? [])
+      .map((p) => mapProperty(p, label, checkin, checkout))
       .filter(Boolean);
 
-    let pins = results.map((p) => mapProperty(p, city, checkin, checkout)).filter(Boolean);
-    // Local filtering applies in both modes: it's a no-op where the upstream
-    // already narrowed, and it enforces minRating (no Stay22 param used).
+    let pins = [...allPins];
     if (type) pins = pins.filter((p) => p.type === type);
     if (min !== null) pins = pins.filter((p) => p.price >= min);
     if (max !== null) pins = pins.filter((p) => p.price <= max);
@@ -735,9 +847,20 @@ app.get("/api/map", async (req, res) => {
     const prices = pins.map((p) => p.price);
     const allPrices = allPins.map((p) => p.price);
 
+    // Centre: downtown coords for known cities, else the mean of returned pins.
+    const pinCoords = allPins.filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng));
+    const center =
+      knownCenter ??
+      (pinCoords.length
+        ? {
+            lat: pinCoords.reduce((s, p) => s + p.lat, 0) / pinCoords.length,
+            lng: pinCoords.reduce((s, p) => s + p.lng, 0) / pinCoords.length,
+          }
+        : null);
+
     res.json({
-      city,
-      center: CITY_CENTERS[city] ?? null,
+      city: label,
+      center,
       asOf: new Date().toISOString(),
       mode: USE_REAL_STAY22 ? "live" : "mock",
       properties: pins,
@@ -764,8 +887,204 @@ app.get("/api/map", async (req, res) => {
   }
 });
 
+// ---------------------------------------------------------------------------
+// Conversational concierge (Groq LLM + Stay22 tool-calling)
+// ---------------------------------------------------------------------------
+
+// Run a Stay22 search for the LLM tool. Returns card-shaped stays (nightly
+// price so the UI's "/nt" label is correct) + a compact summary for the model.
+async function searchStaysForLLM({ city, maxPrice }) {
+  const address = resolveCity(city) || city;
+  const { checkin, checkout } = nextWeekendDates();
+  const nights = 2; // nextWeekendDates is Fri->Sun
+  let data;
+  try {
+    data = await getAccommodations(address, maxPrice ? { max: Math.round(maxPrice * nights) } : {});
+  } catch {
+    data = { results: [] };
+  }
+  const stays = (data.results ?? [])
+    .map((p) => {
+      const total = cheapestTotal(p);
+      const nightly = typeof total === "number" ? Math.round(total / nights) : null;
+      // Live Stay22 returns rating/capacity as objects; flatten to primitives
+      // so the UI (and JSON) never receives an object where a number is shown.
+      const rating =
+        typeof p.rating === "object" && p.rating ? p.rating.value ?? null : p.rating ?? null;
+      const capacity =
+        typeof p.capacity === "object" && p.capacity ? p.capacity.guests ?? null : p.capacity ?? null;
+      return {
+        id: p.id ?? p.name,
+        name: p.name ?? "Stay",
+        type: p.type ?? "hotel",
+        city: address,
+        destination: address,
+        rating,
+        capacity,
+        price: nightly, // per night
+        totalStay: total, // 2-night total
+        freeCancellation: p.policies?.freeCancellation ?? null,
+        amenities: Array.isArray(p.amenities) ? p.amenities : [],
+        bookUrl: buildBookUrl(p, address, checkin, checkout),
+      };
+    })
+    .filter((s) => Number.isFinite(s.price))
+    .sort((a, b) => a.price - b.price)
+    .slice(0, 6);
+
+  const summary = stays.length
+    ? stays
+        .map(
+          (s, i) =>
+            `${i + 1}. ${s.name} (${s.type}) — $${s.price}/night, $${s.totalStay} for ${nights} nights${
+              s.rating ? `, rating ${s.rating}` : ""
+            }`
+        )
+        .join("\n")
+    : `No live Stay22 inventory found for ${address}.`;
+
+  return { stays, summary, city: address, nights };
+}
+
+const CHAT_SYSTEM_PROMPT = `You are Yonder's travel concierge. You help users plan trips — itineraries, timing, budgets, getting around — and find places to stay.
+Rules:
+- Be conversational, concise, and genuinely helpful. Answer planning questions directly with specifics.
+- When the user wants hotels/stays or prices, call the search_stays tool. NEVER invent hotel names or prices — only cite what the tool returns.
+- Prices from the tool are in CAD; "price" is per night, "totalStay" is the 2-night weekend total.
+- After a search, summarize the best few options in prose (the UI shows cards separately).
+- If you don't have a destination yet for a search, ask for one. Keep answers under ~120 words unless building an itinerary.`;
+
+const SEARCH_TOOL = {
+  type: "function",
+  function: {
+    name: "search_stays",
+    description:
+      "Search live Stay22 accommodation inventory for a city and return real stays with nightly prices. Use whenever the user wants hotels, stays, or price info.",
+    parameters: {
+      type: "object",
+      properties: {
+        city: { type: "string", description: "Destination city, e.g. 'Lisbon, Portugal' or 'Banff'." },
+        maxPrice: { type: "number", description: "Optional max price per night in CAD." },
+      },
+      required: ["city"],
+    },
+  },
+};
+
+async function callGroqOnce(messages, withTools) {
+  const res = await fetch(`${GROQ_BASE_URL}/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${GROQ_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: GROQ_MODEL,
+      messages,
+      temperature: 0.6,
+      ...(withTools ? { tools: [SEARCH_TOOL], tool_choice: "auto" } : {}),
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    const err = new Error(`groq ${res.status} ${body}`);
+    err.toolUseFailed = res.status === 400 && body.includes("tool_use_failed");
+    throw err;
+  }
+  return res.json();
+}
+
+// Llama on Groq occasionally emits a malformed tool call (400 tool_use_failed).
+// Retry once without tools so the user still gets a text answer instead of an
+// error.
+async function callGroq(messages, { withTools } = {}) {
+  try {
+    return await callGroqOnce(messages, withTools);
+  } catch (err) {
+    if (err.toolUseFailed && withTools) {
+      return await callGroqOnce(messages, false);
+    }
+    throw err;
+  }
+}
+
+// POST /api/chat { messages:[{role,content}] } -> { answer, results, mode }
+app.post("/api/chat", async (req, res) => {
+  if (!LLM_ENABLED) {
+    // No key: tell the frontend to use its local template fallback.
+    return res.status(501).json({ error: "LLM not configured", mode: "fallback" });
+  }
+  const incoming = Array.isArray(req.body?.messages) ? req.body.messages : [];
+  const history = incoming
+    .filter((m) => m && typeof m.content === "string" && (m.role === "user" || m.role === "assistant"))
+    .slice(-12)
+    .map((m) => ({ role: m.role, content: m.content }));
+
+  const messages = [{ role: "system", content: CHAT_SYSTEM_PROMPT }, ...history];
+  let collectedStays = [];
+
+  try {
+    // Up to 3 rounds so the model can call the tool then answer.
+    for (let round = 0; round < 3; round++) {
+      const data = await callGroq(messages, { withTools: true });
+      const msg = data.choices?.[0]?.message;
+      if (!msg) throw new Error("empty groq response");
+
+      if (msg.tool_calls?.length) {
+        messages.push(msg);
+        for (const call of msg.tool_calls) {
+          let args = {};
+          try {
+            args = JSON.parse(call.function.arguments || "{}");
+          } catch {
+            /* bad args - search with empty */
+          }
+          const { stays, summary } = await searchStaysForLLM(args);
+          collectedStays = stays.length ? stays : collectedStays;
+          messages.push({
+            role: "tool",
+            tool_call_id: call.id,
+            content: summary,
+          });
+        }
+        continue; // let the model use the tool output
+      }
+
+      return res.json({
+        answer: msg.content || "Here's what I found.",
+        results: collectedStays,
+        mode: "groq",
+      });
+    }
+    // Tool loop exhausted: force one final answer with tools disabled so the
+    // model must write prose instead of calling the tool again.
+    const finalData = await callGroq(messages, { withTools: false });
+    const finalMsg = finalData.choices?.[0]?.message;
+    return res.json({
+      answer: finalMsg?.content || "Here are some options based on your request.",
+      results: collectedStays,
+      mode: "groq",
+    });
+  } catch (err) {
+    console.error("chat error", err);
+    // If we already fetched stays before the model hiccuped, still show them.
+    if (collectedStays.length) {
+      return res.json({
+        answer: `Here are some stays in ${collectedStays[0].city}.`,
+        results: collectedStays,
+        mode: "groq",
+      });
+    }
+    return res.status(502).json({ error: "chat failed", detail: String(err.message ?? err) });
+  }
+});
+
 app.get("/health", (req, res) => {
-  res.json({ status: "ok", stay22Mode: USE_REAL_STAY22 ? "live" : "mock" });
+  res.json({
+    status: "ok",
+    stay22Mode: USE_REAL_STAY22 ? "live" : "mock",
+    llm: LLM_ENABLED ? "groq" : "off",
+  });
 });
 
 const PORT = process.env.PORT || 4000;

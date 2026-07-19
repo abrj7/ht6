@@ -46,6 +46,24 @@
   color: var(--route-teal);
 }
 
+.cg-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cg-btn--voice,
+.cg-btn--reset {
+  font-size: 0.58rem;
+  padding: 0.3rem 0.6rem;
+  white-space: nowrap;
+}
+
+.cg-btn--voice.cg-btn--active {
+  border-color: var(--stamp-red);
+  color: var(--stamp-red);
+}
+
 .cg-layout {
   flex: 1;
   display: grid;
@@ -130,6 +148,7 @@
   font-size: 0.88rem;
   line-height: 1.45;
   word-break: break-word;
+  white-space: pre-line; /* preserve itinerary line breaks */
 }
 
 .cg-bubble--user {

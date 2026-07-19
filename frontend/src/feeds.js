@@ -259,7 +259,7 @@ export function normalizeMarket(data) {
 // Poll GET /api/opportunity while `active`. Keeps the last payload when the
 // view unmounts the poll, falls back to DEMO_ROUTES if the backend is down.
 // routes === null means "first fetch still in flight" (render skeletons).
-export function useOpportunity(active, refreshKey) {
+export function useOpportunity(active, refreshKey, goals, userId = "demo") {
   const [state, setState] = useState({
     routes: null,
     coachMessage: DEMO_COACH,
@@ -269,15 +269,31 @@ export function useOpportunity(active, refreshKey) {
     lastUpdated: null,
   });
 
+  const goalList = Array.isArray(goals) ? goals : [];
+  const goalsKey = JSON.stringify(goalList);
+
   useEffect(() => {
     if (!active) return;
     let cancelled = false;
 
+    // No goals defined yet: show an empty board (the dashboard prompts the
+    // user to add their first destination goal). Don't hit the backend.
+    if (goalList.length === 0) {
+      setState((s) => ({ ...s, routes: [], coachMessage: null, live: true, lastUpdated: new Date() }));
+      return;
+    }
+
     async function refresh() {
       try {
-        const r = await fetch(
-          `${BACKEND_URL}/api/opportunity?category=food_delivery&amount=150`
-        );
+        // Backend still requires a primary category+amount; use the first goal.
+        const primary = goalList[0];
+        const params = new URLSearchParams({
+          category: primary.category || "Savings",
+          amount: String(Number(primary.amount) > 0 ? primary.amount : 150),
+          goals: goalsKey,
+        });
+        if (userId) params.set("userId", userId);
+        const r = await fetch(`${BACKEND_URL}/api/opportunity?${params.toString()}`);
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         const data = await r.json();
         if (cancelled) return;
@@ -292,9 +308,11 @@ export function useOpportunity(active, refreshKey) {
         });
       } catch {
         if (cancelled) return;
-        // Backend down: fall back to demo rows, but never clobber live data.
+        // Backend down: keep last live data, else demo rows so the UI isn't blank.
         setState((s) =>
-          s.live ? s : { ...s, routes: s.routes || DEMO_ROUTES, live: false, lastUpdated: new Date() }
+          s.live && s.routes?.length
+            ? s
+            : { ...s, routes: s.routes || DEMO_ROUTES, live: false, lastUpdated: new Date() }
         );
       }
     }
@@ -305,7 +323,7 @@ export function useOpportunity(active, refreshKey) {
       cancelled = true;
       clearInterval(timer);
     };
-  }, [active, refreshKey]);
+  }, [active, refreshKey, goalsKey, userId]);
 
   return state;
 }

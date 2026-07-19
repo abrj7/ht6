@@ -1637,3 +1637,312 @@ body {
     animation: none !important;
   }
 }
+
+/* ---------------- Auth controls (topbar) ---------------- */
+.auth-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+}
+
+.auth-demo,
+.auth-loading,
+.auth-error {
+  border: 1px solid var(--panel-line);
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.6rem;
+  color: var(--chalk-dim);
+  white-space: nowrap;
+}
+
+.auth-error {
+  border-color: rgba(200, 60, 60, 0.5);
+  color: #d66;
+}
+
+.auth-user {
+  gap: 0.5rem;
+}
+
+.auth-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--panel-line);
+  flex: none;
+}
+
+.auth-avatar--fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel);
+  color: var(--flap-amber);
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.auth-details {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  max-width: 12ch;
+}
+
+.auth-name {
+  font-weight: 700;
+  color: var(--chalk);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.auth-email {
+  font-size: 0.58rem;
+  color: var(--chalk-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------------- Trip settings panel ---------------- */
+.trip-settings__toggle {
+  border: 1px solid var(--panel-line);
+  background: transparent;
+  color: var(--chalk-dim);
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.trip-settings__toggle:hover {
+  border-color: var(--flap-amber);
+  color: var(--chalk);
+}
+
+.trip-settings__summary {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  color: var(--chalk-dim);
+  line-height: 1.5;
+}
+
+.trip-settings__summary strong {
+  color: var(--chalk);
+}
+
+.trip-settings__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+
+.trip-settings__all {
+  border-top: 1px dashed var(--panel-line);
+  padding-top: 0.5rem;
+}
+
+.trip-settings__all summary {
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--chalk-dim);
+  margin-bottom: 0.5rem;
+}
+
+.trip-settings__all .spend-field {
+  margin-bottom: 0.45rem;
+}
+
+/* ---------------- Goal manager ---------------- */
+.goal-list {
+  list-style: none;
+  margin: 0.4rem 0 0.8rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.goal-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 4.5rem auto;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.goal-row input {
+  border: 1px solid var(--panel-line);
+  background: var(--panel);
+  color: var(--chalk);
+  border-radius: 5px;
+  padding: 0.3rem 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  min-width: 0;
+}
+
+.goal-row__del {
+  border: 1px solid var(--panel-line);
+  background: transparent;
+  color: var(--chalk-dim);
+  border-radius: 5px;
+  width: 1.6rem;
+  height: 1.6rem;
+  line-height: 1;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.goal-row__del:hover {
+  border-color: var(--stamp-red);
+  color: var(--stamp-red);
+}
+
+.goal-add {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  border-top: 1px dashed var(--panel-line);
+  padding-top: 0.6rem;
+}
+
+.goal-add input {
+  border: 1px solid var(--panel-line);
+  background: var(--panel);
+  color: var(--chalk);
+  border-radius: 5px;
+  padding: 0.4rem 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+}
+
+/* ---------------- Empty-state hero ---------------- */
+.goals-empty {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.goals-empty__title {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--chalk);
+}
+
+.goals-empty__body {
+  margin: 0;
+  color: var(--chalk-dim);
+  line-height: 1.6;
+  max-width: 52ch;
+}
+
+/* ---------------- Photo carousel ---------------- */
+.carousel {
+  position: relative;
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--panel-line);
+}
+
+.chart-photo {
+  margin-bottom: 1rem;
+}
+
+.carousel__img {
+  display: block;
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.carousel__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel__nav:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.carousel__nav--prev {
+  left: 8px;
+}
+.carousel__nav--next {
+  right: 8px;
+}
+
+.carousel__dots {
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.carousel__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.carousel__dot--on {
+  background: #fff;
+}
+
+/* ---------------- Error boundary fallback ---------------- */
+.error-boundary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.7rem;
+  margin: 2rem;
+  padding: 1.4rem 1.6rem;
+  border: 1px solid rgba(193, 72, 59, 0.4);
+  border-radius: 10px;
+  background: var(--panel);
+  max-width: 40rem;
+}
+
+.error-boundary__title {
+  font-size: 1rem;
+  color: var(--stamp-red);
+}
+
+.error-boundary__msg {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--chalk-dim);
+  word-break: break-word;
+}

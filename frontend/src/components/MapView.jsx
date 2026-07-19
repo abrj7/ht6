@@ -45,6 +45,20 @@ const DEMO_PROPERTIES = [
   { id: "d16", name: "Yorkville Boutique Flat",       type: "apartment", lat: 43.6708, lng: -79.3899, price: 288, rating: 9.0, capacity: 4, supplier: "vrbo",      spreadPct: 9,  arb: false, freeCancellation: true,  instantBook: true,  bookUrl: "https://www.stay22.com" },
 ];
 
+// Fallback photos for the offline demo dataset (real live pins carry their own
+// Stay22 thumbnail). Seeded so each demo property keeps a stable image.
+const DEMO_IMAGES = [
+  "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=70",
+  "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&q=70",
+  "https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&q=70",
+  "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&q=70",
+  "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=400&q=70",
+];
+DEMO_PROPERTIES.forEach((p, idx) => {
+  p.image = DEMO_IMAGES[idx % DEMO_IMAGES.length];
+  p.images = [p.image];
+});
+
 function computeStats(props) {
   if (!props.length) {
     return { count: 0, minPrice: 0, maxPrice: 0, avgPrice: 0, arbCount: 0 };
@@ -108,8 +122,15 @@ function popupHtml(p) {
   if (p.freeCancellation) tags.push('<span class="mv-tag mv-tag-good">FREE CANCEL</span>');
   if (p.instantBook) tags.push('<span class="mv-tag">INSTANT BOOK</span>');
   if (p.arb) tags.push('<span class="mv-tag mv-tag-arb">ARB</span>');
+  const imgs = Array.isArray(p.images) && p.images.length ? p.images : p.image ? [p.image] : [];
+  const gallery = imgs.length
+    ? `<div class="mv-gallery">${imgs
+        .map((u) => `<img class="mv-gallery-img" src="${esc(u)}" loading="lazy" alt="" />`)
+        .join("")}</div>`
+    : "";
   return `
     <div class="mv-popup">
+      ${gallery}
       <div class="mv-popup-name">${esc(p.name)}</div>
       <div class="mv-popup-meta">${esc(p.type).toUpperCase()} · ★ ${esc(p.rating)} · SLEEPS ${esc(p.capacity)}</div>
       <div class="mv-popup-supplier">best via <b>${esc(p.supplier)}</b> · ${esc(p.spreadPct)}% spread across suppliers</div>
@@ -176,7 +197,7 @@ export default function MapView() {
       controller?.abort();
       controller = new AbortController();
       const params = new URLSearchParams();
-      params.set("city", f.city.split(",")[0].trim());
+      params.set("city", f.city.trim());
       if (f.type) params.set("type", f.type);
       if (f.min !== "") params.set("min", f.min);
       if (f.max !== "") params.set("max", f.max);
@@ -265,23 +286,26 @@ export default function MapView() {
 
   const setFilter = (patch) => setFilters((f) => ({ ...f, ...patch }));
 
-  const onCityChange = (city) =>
-    setFilters((f) => ({ ...f, city, type: "", min: "", max: "" }));
+  const onCityChange = (city) => setFilters((f) => ({ ...f, city }));
 
   return (
     <div className="mv-root">
       <div className="mv-filterbar">
         <div className="mv-field">
-          <span className="mv-microlabel">CITY</span>
-          <select
+          <span className="mv-microlabel">CITY OR AREA</span>
+          <input
             className="mv-select"
+            type="text"
+            list="mv-cities"
+            placeholder="Search any city or area…"
             value={filters.city}
             onChange={(e) => onCityChange(e.target.value)}
-          >
+          />
+          <datalist id="mv-cities">
             {CITIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
+              <option key={c} value={c} />
             ))}
-          </select>
+          </datalist>
         </div>
 
         <div className="mv-field mv-field-grow">

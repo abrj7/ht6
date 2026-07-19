@@ -8,9 +8,9 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
 
 const STARTER_CHIPS = [
   "Hotels near Banff under $250",
-  "Weekend cabin with hot tub",
+  "Plan a 3-day weekend in Banff",
   "Cheapest stay in Montreal",
-  "Family-friendly with a pool",
+  "Best time to visit and rough budget?",
 ];
 
 const DEMO_CATALOG = [
@@ -131,26 +131,153 @@ function formatPrice(n) {
   return Number.isFinite(n) ? `$${n.toFixed(n % 1 ? 2 : 0)}` : "—";
 }
 
+// nearestStation is a string in demo data but an object
+// {name, type, line, walkMinutes} from the /api/ask RAG. Render either safely.
+function formatStation(station) {
+  if (!station) return null;
+  if (typeof station === "string") return station;
+  const { name, line, walkMinutes } = station;
+  if (!name) return null;
+  const bits = [name];
+  if (line) bits.push(`(${line})`);
+  const label = bits.join(" ");
+  return Number.isFinite(walkMinutes) ? `${label} — ${walkMinutes} min walk` : label;
+}
+
+// Hotel-search intent: only pull Stay22 cards when the user clearly asks about
+// lodging/price. Everything else is answered conversationally (planning, chat)
+// instead of being shoved into a hotel query.
+const HOTEL_RE =
+  /\b(hotels?|hostels?|motels?|resorts?|cabins?|lodges?|rooms?|suites?|accommodations?|lodging|airbnb|place[s]? to stay|where to stay|stays?|book a|cheapest|hot tub|pool)\b/i;
+
+function isHotelQuery(q) {
+  return HOTEL_RE.test(q) || /\bunder\s*\$?\d/i.test(q) || /\$\s*\d/.test(q);
+}
+
+// Loose itinerary matcher (tolerates common misspellings like "itenerary").
+const ITINERARY_RE = /\bit[ie]n[ae]rar?y|itiner|day[- ]?by[- ]?day|schedule|what to do|things to do|activities\b/i;
+
+/** Conversational planning reply — no hotel cards, grounded in the catalog. */
+function planningAnswer(query, ctx) {
+  const q = query.toLowerCase();
+  const dests = ["Banff, AB", "Montreal, QC", "Tofino, BC", "Blue Mountain, ON", "Paris, France"];
+  const named = dests.find((d) => q.includes(d.split(",")[0].toLowerCase()));
+  const lastDest = ctx.lastResults?.[0]?.destination || ctx.lastResults?.[0]?.city;
+  const place = named ? named.split(",")[0] : lastDest ? String(lastDest).split(",")[0] : null;
+
+  if (ITINERARY_RE.test(q)) {
+    if (!place) {
+      return {
+        answer:
+          "I can build a day-by-day itinerary — which destination is it for? " +
+          "Tell me the city (and how many days), e.g. \"3 days in Banff\".",
+        parsed: { intent: "planning", topic: "itinerary", query },
+        results: [],
+        mode: "demo",
+        tookMs: Math.round(60 + Math.random() * 60),
+        warming: false,
+      };
+    }
+    const daysMatch = q.match(/(\d+)\s*[- ]?\s*day/);
+    const days = Math.min(5, Math.max(1, daysMatch ? Number(daysMatch[1]) : 3));
+    const plan = [
+      `Day 1 — Arrive in ${place}, settle in, walk the main strip, easy dinner nearby.`,
+      `Day 2 — The headline day: a signature hike/gondola or a museum + neighbourhood crawl.`,
+      `Day 3 — Slower morning, a market or viewpoint, then head back.`,
+      `Day 4 — Day trip to a nearby spot or a second trail.`,
+      `Day 5 — Souvenirs + a relaxed final morning before departure.`,
+    ].slice(0, days);
+    return {
+      answer:
+        `Here's a ${days}-day ${place} itinerary:\n` +
+        plan.join("\n") +
+        `\n\nWant me to line up stays that fit this? Just say "find hotels in ${place}".`,
+      parsed: { intent: "planning", topic: "itinerary", query, days },
+      results: [],
+      mode: "demo",
+      tookMs: Math.round(70 + Math.random() * 90),
+      warming: false,
+    };
+  }
+
+  if (/budget|how much|cost/.test(q)) {
+    return {
+      answer:
+        `Rough weekend budget from Toronto: stays run ~$95–$390/night in the catalog, ` +
+        `so 2 nights + travel lands around $350–$900 per person depending on destination. ` +
+        `Cut recoverable spend (food delivery, subscriptions) and the dashboard shows how fast it funds the trip. ` +
+        `Want me to pull the cheapest stays${place ? ` in ${place}` : ""}?`,
+      parsed: { intent: "planning", topic: "budget", query },
+      results: [],
+      mode: "demo",
+      tookMs: Math.round(70 + Math.random() * 90),
+      warming: true,
+    };
+  }
+  if (/when|best time|weather/.test(q)) {
+    return {
+      answer:
+        `${place || "Most Ontario/Alberta spots"} are best late spring–early fall for hiking and ` +
+        `Dec–Mar for ski towns like Blue Mountain and Banff. Weekends book up fastest, so lock dates early. ` +
+        `Tell me a destination and budget and I'll find stays.`,
+      parsed: { intent: "planning", topic: "timing", query },
+      results: [],
+      mode: "demo",
+      tookMs: Math.round(70 + Math.random() * 90),
+      warming: true,
+    };
+  }
+  if (/how many days|how long/.test(q)) {
+    return {
+      answer:
+        `A 2–3 day weekend is the sweet spot for ${place || "these trips"}. Two nights covers the ` +
+        `highlights without burning a whole week. Want a day-by-day itinerary or some stays?`,
+      parsed: { intent: "planning", topic: "duration", query },
+      results: [],
+      mode: "demo",
+      tookMs: Math.round(70 + Math.random() * 90),
+      warming: false,
+    };
+  }
+  return {
+    answer:
+      `Happy to help plan the trip — I can cover timing, budget, itinerary, or getting around, ` +
+      `and pull matching stays from live Stay22 inventory when you're ready. What do you want to nail down first?`,
+    parsed: { intent: "planning", topic: "general", query },
+    results: [],
+    mode: "demo",
+    tookMs: Math.round(70 + Math.random() * 90),
+    warming: true,
+  };
+}
+
 /** Client-side demo RAG when POST /api/ask returns 501. */
 function demoAsk(query, ctx) {
+  if (!isHotelQuery(query)) return planningAnswer(query, ctx);
+
   const q = query.toLowerCase();
   let pool = ctx.lastResults?.length ? [...ctx.lastResults] : [...DEMO_CATALOG];
+  // Results from /api/ask may omit fields demoAsk filters on. Normalize so
+  // amenities/destination are always safe to read — a missing field must not
+  // blow up the whole view.
+  const amenitiesOf = (r) => (Array.isArray(r.amenities) ? r.amenities : []);
+  const destOf = (r) => r.destination || r.city || "";
 
   if (/\bcheaper\b|\blower\b|\bless\b|\baffordable\b/.test(q)) {
     pool.sort((a, b) => a.price - b.price);
   }
   if (/\bpool\b|\bswim\b/.test(q)) {
-    pool = pool.filter((r) => r.amenities.some((a) => /pool/i.test(a)));
+    pool = pool.filter((r) => amenitiesOf(r).some((a) => /pool/i.test(a)));
   }
   if (/\bhot tub\b|\bhottub\b/.test(q)) {
-    pool = pool.filter((r) => r.amenities.some((a) => /hot tub/i.test(a)));
+    pool = pool.filter((r) => amenitiesOf(r).some((a) => /hot tub/i.test(a)));
   }
   if (/\bfamily\b|\bkids\b|\bchildren\b/.test(q)) {
-    pool = pool.filter((r) => r.capacity >= 3 || /kids|pool/i.test(r.amenities.join(" ")));
+    pool = pool.filter((r) => r.capacity >= 3 || /kids|pool/i.test(amenitiesOf(r).join(" ")));
   }
-  if (/banff/.test(q)) pool = pool.filter((r) => /banff/i.test(r.destination));
-  if (/montreal/.test(q)) pool = pool.filter((r) => /montreal/i.test(r.destination));
-  if (/blue mountain/.test(q)) pool = pool.filter((r) => /blue mountain/i.test(r.destination));
+  if (/banff/.test(q)) pool = pool.filter((r) => /banff/i.test(destOf(r)));
+  if (/montreal/.test(q)) pool = pool.filter((r) => /montreal/i.test(destOf(r)));
+  if (/blue mountain/.test(q)) pool = pool.filter((r) => /blue mountain/i.test(destOf(r)));
 
   const under = q.match(/under\s*\$?\s*(\d+)/);
   if (under) pool = pool.filter((r) => r.price <= Number(under[1]));
@@ -289,32 +416,40 @@ export default function ConciergeView() {
         let payload;
         let warming = false;
 
+        // Primary path: the conversational LLM concierge (Groq) which chats and
+        // calls Stay22 as a tool for grounded hotel prices. If it's not
+        // configured (501) or errors, fall back to local heuristics so the demo
+        // still works: hotel-intent -> RAG cards, else template planning replies.
         try {
-          const res = await fetch(`${BACKEND_URL}/api/ask`, {
+          const res = await fetch(`${BACKEND_URL}/api/chat`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              query,
-              history: ctx.history,
-              context: {
-                previousResults: ctx.lastResults,
-                previousParsed: ctx.lastParsed,
-              },
-            }),
+            body: JSON.stringify({ messages: ctx.history }),
           });
-
-          if (res.status === 501) {
-            payload = demoAsk(query, ctx);
-            warming = true;
-          } else if (!res.ok) {
-            throw new Error(`Search failed (${res.status})`);
-          } else {
-            payload = await res.json();
-          }
-        } catch (err) {
-          if (err.message?.startsWith("Search failed")) throw err;
-          payload = demoAsk(query, ctx);
+          if (res.status === 501) throw new Error("llm-unconfigured");
+          if (!res.ok) throw new Error("llm-error");
+          payload = await res.json();
+        } catch {
           warming = true;
+          if (!isHotelQuery(query)) {
+            payload = planningAnswer(query, ctx);
+          } else {
+            try {
+              const res = await fetch(`${BACKEND_URL}/api/ask`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  query,
+                  history: ctx.history,
+                  context: { previousResults: ctx.lastResults, previousParsed: ctx.lastParsed },
+                }),
+              });
+              if (!res.ok) throw new Error("ask-failed");
+              payload = await res.json();
+            } catch {
+              payload = demoAsk(query, ctx);
+            }
+          }
         }
 
         const answer = payload.answer || "Here are some options for you.";
@@ -355,6 +490,16 @@ export default function ConciergeView() {
     submitQuery(input);
   };
 
+  const resetChat = useCallback(() => {
+    stopSpeaking();
+    setMessages([]);
+    setResults([]);
+    setInput("");
+    setLastMode(null);
+    ctxRef.current = { history: [], lastResults: [], lastParsed: null };
+    inputRef.current?.focus();
+  }, [stopSpeaking]);
+
   const toggleMic = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -392,14 +537,37 @@ export default function ConciergeView() {
   return (
     <div className="cg-root">
       <header className="cg-header">
-        <span className="cg-title">Voice concierge</span>
-        <span
-          className={`cg-tts-badge${ttsProvider === "elevenlabs" ? " cg-tts-badge--premium" : ""}`}
-          title={speaking ? "Speaking…" : muted ? "TTS muted" : "TTS active"}
-        >
-          {ttsLabel}
-          {muted ? " · muted" : speaking ? " · speaking" : ""}
-        </span>
+        <span className="cg-title">Concierge — hotels &amp; trip planning</span>
+        <div className="cg-header-actions">
+          <button
+            type="button"
+            className={`cg-btn cg-btn--voice${muted ? " cg-btn--active" : ""}`}
+            onClick={() => {
+              if (!muted) stopSpeaking();
+              setMuted((v) => !v);
+            }}
+            aria-pressed={!muted}
+            title={muted ? "Turn voice replies on" : "Turn voice replies off"}
+          >
+            {muted ? "Voice off" : "Voice on"}
+          </button>
+          <button
+            type="button"
+            className="cg-btn cg-btn--reset"
+            onClick={resetChat}
+            disabled={messages.length === 0 && !input}
+            title="Clear conversation"
+          >
+            New chat
+          </button>
+          <span
+            className={`cg-tts-badge${ttsProvider === "elevenlabs" ? " cg-tts-badge--premium" : ""}`}
+            title={speaking ? "Speaking…" : muted ? "TTS muted" : "TTS active"}
+          >
+            {ttsLabel}
+            {muted ? " · muted" : speaking ? " · speaking" : ""}
+          </span>
+        </div>
       </header>
 
       <div className="cg-layout">
@@ -422,8 +590,9 @@ export default function ConciergeView() {
             {messages.length === 0 && !thinking && (
               <div className="cg-empty">
                 <strong>Ask anything</strong>
-                Natural-language hotel search over live Stay22 inventory. Try a chip above or type
-                a follow-up like &ldquo;cheaper&rdquo; or &ldquo;with a pool&rdquo;.
+                Hotel search over live Stay22 inventory <em>and</em> trip planning — timing, budget,
+                itineraries. Try a chip above, a follow-up like &ldquo;cheaper&rdquo;, or
+                &ldquo;plan a weekend in Banff&rdquo;.
               </div>
             )}
 
@@ -472,18 +641,6 @@ export default function ConciergeView() {
             >
               MIC
             </button>
-            <button
-              type="button"
-              className={`cg-btn cg-btn--mute${muted ? " cg-btn--active" : ""}`}
-              onClick={() => {
-                if (!muted) stopSpeaking();
-                setMuted((v) => !v);
-              }}
-              title={muted ? "Unmute voice replies" : "Mute voice replies"}
-              aria-pressed={muted}
-            >
-              {muted ? "UNMUTE" : "MUTE"}
-            </button>
             <button type="submit" className="cg-btn cg-btn--send" disabled={thinking || !input.trim()}>
               SEND
             </button>
@@ -517,9 +674,9 @@ export default function ConciergeView() {
                     {r.capacity != null && <span>Sleeps {r.capacity}</span>}
                     {r.freeCancellation && <span>Free cancel</span>}
                   </div>
-                  {r.nearestStation && (
+                  {formatStation(r.nearestStation) && (
                     <div className="cg-card-meta">
-                      <span>{r.nearestStation}</span>
+                      <span>{formatStation(r.nearestStation)}</span>
                     </div>
                   )}
                   {r.why && <p className="cg-card-why">{r.why}</p>}

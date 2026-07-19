@@ -2,6 +2,8 @@ import { useState } from "react";
 import PortfolioStrip from "./PortfolioStrip.jsx";
 import LineChart from "./LineChart.jsx";
 import SpendInputForm from "./SpendInputForm.jsx";
+import TripSettings from "./TripSettings.jsx";
+import PhotoCarousel from "./PhotoCarousel.jsx";
 import Watchlist from "./Watchlist.jsx";
 import RouteRow from "./RouteRow.jsx";
 
@@ -40,8 +42,17 @@ function ChartPanel({ route }) {
   const delta = route.priceDelta;
   const dropped = Number.isFinite(delta) && delta < 0;
 
+  const photos = route.property?.images?.length
+    ? route.property.images
+    : route.property?.image
+    ? [route.property.image]
+    : [];
+
   return (
     <section className="panel chart-panel" aria-label={`${route.destination} price chart`}>
+      {photos.length > 0 && (
+        <PhotoCarousel images={photos} alt={route.property?.name || route.destination} className="chart-photo" />
+      )}
       <div className="chart-head">
         <div className="chart-head__id">
           <span className="micro-label">{labelize(route.category)}</span>
@@ -121,13 +132,48 @@ function GreenCard({ route }) {
   );
 }
 
-export default function DashboardView({ routes, coachMessage, tickers, onOpenExchange, onSpendUpdated }) {
+export default function DashboardView({
+  routes,
+  coachMessage,
+  tickers,
+  onOpenExchange,
+  onSpendUpdated,
+  goals,
+  onGoalsChange,
+}) {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [expandedCategory, setExpandedCategory] = useState(null);
 
   const selectedRoute = routes
     ? routes.find((r) => r.category === selectedCategory) || routes[0]
     : null;
+
+  const noGoals = Array.isArray(goals) && goals.length === 0;
+
+  // Fresh profile with no goals: prompt to create one instead of showing an
+  // empty board or (worse) someone else's presets.
+  if (noGoals) {
+    return (
+      <div className="dashboard">
+        <div className="dashboard-main">
+          <div className="dashboard-left">
+            <section className="panel goals-empty" aria-label="Get started">
+              <h2 className="goals-empty__title">Start your first goal</h2>
+              <p className="goals-empty__body">
+                Yonder turns money you can redirect into a real trip. Add a spending
+                category you want to cut and the destination it should fund — Yonder tracks
+                the live price and shows how fast you get there.
+              </p>
+              <TripSettings goals={goals} onChange={onGoalsChange} />
+            </section>
+          </div>
+          <div className="dashboard-right">
+            <SpendInputForm onSpendUpdated={onSpendUpdated} goals={goals} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard">
@@ -176,7 +222,9 @@ export default function DashboardView({ routes, coachMessage, tickers, onOpenExc
         <div className="dashboard-right">
           <Watchlist tickers={tickers} onOpenExchange={onOpenExchange} />
 
-          <SpendInputForm onSpendUpdated={onSpendUpdated} />
+          <TripSettings goals={goals} onChange={onGoalsChange} />
+
+          <SpendInputForm onSpendUpdated={onSpendUpdated} goals={goals} />
 
           <section className="coach-card" aria-label="Coach">
             <div className="coach-label">Coach</div>

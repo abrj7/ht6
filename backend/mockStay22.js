@@ -416,7 +416,7 @@ export const CATEGORY_DESTINATIONS = {
   food_delivery: "Banff, AB",
   subscriptions: "Montreal, QC",
   shopping: "Tofino, BC",
-  gaming: "Prince Edward County, ON",
+  gaming: "Paris, France",
   transport: "Blue Mountain, ON",
 };
 

@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
+import { useAuth0 } from "@auth0/auth0-react";
 import Sidebar from "./components/Sidebar.jsx";
 import TopBar from "./components/TopBar.jsx";
 import DashboardView from "./components/DashboardView.jsx";
 import ExchangeView from "./components/ExchangeView.jsx";
 import MapView from "./components/MapView.jsx";
 import ConciergeView from "./components/ConciergeView.jsx";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import NowcastView from "./components/NowcastView.jsx";
 import MatchView from "./components/MatchView.jsx";
 import { useOpportunity, useMarket } from "./feeds.js";
+import { loadGoals, saveGoals } from "./tripConfig.js";
 
 // Person A owns this file and everything in /frontend except
 // components/MapView.jsx and components/map.css (map agent's).
@@ -22,10 +25,21 @@ export default function App() {
     if (typeof window === "undefined") return "light";
     return window.localStorage.getItem("yonder-theme") || "light";
   });
+  // Whose data drives the board: the logged-in user's Auth0 sub, or the shared
+  // "demo" sandbox when signed out. Changing this reloads that profile's goals.
+  const { user, isAuthenticated } = useAuth0();
+  const userId = isAuthenticated && user?.sub ? user.sub : "demo";
+
+  // User-defined saving goals, scoped per profile. Reload when the user changes
+  // (login/logout) so profiles never see each other's goals.
+  const [goals, setGoals] = useState(() => loadGoals(userId));
+  useEffect(() => {
+    setGoals(loadGoals(userId));
+  }, [userId]);
 
   // The hooks only poll while their `active` flag is true and keep the last
   // payload across view switches, so nothing refetches on navigation alone.
-  const opportunity = useOpportunity(view === "dashboard", refreshKey);
+  const opportunity = useOpportunity(view === "dashboard", refreshKey, goals, userId);
   const marketFeed = useMarket(view === "dashboard" || view === "exchange", refreshKey);
 
   const { routes, coachMessage, live: oppLive, feedMode } = opportunity;
@@ -53,6 +67,12 @@ export default function App() {
   };
 
   const handleSpendUpdated = () => {
+    setRefreshKey((current) => current + 1);
+  };
+
+  const handleGoalsChange = (next) => {
+    setGoals(next);
+    saveGoals(userId, next);
     setRefreshKey((current) => current + 1);
   };
 
@@ -89,6 +109,8 @@ export default function App() {
               tickers={market ? market.tickers : null}
               onOpenExchange={openExchangeAt}
               onSpendUpdated={handleSpendUpdated}
+              goals={goals}
+              onGoalsChange={handleGoalsChange}
             />
           )}
 
@@ -113,7 +135,11 @@ export default function App() {
             </div>
           )}
 
-          {view === "concierge" && <ConciergeView />}
+          {view === "concierge" && (
+            <ErrorBoundary label="Concierge hit an error">
+              <ConciergeView />
+            </ErrorBoundary>
+          )}
           {view === "nowcast" && <NowcastView />}
           {view === "match" && <MatchView />}
         </main>

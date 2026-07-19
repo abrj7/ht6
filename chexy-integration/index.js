@@ -28,9 +28,15 @@ const RECOVERABLE_RATES = {
 const round2 = (n) => Math.round(n * 100) / 100;
 
 app.get("/spend-summary", (req, res) => {
-  const transactions = JSON.parse(
+  const userId = req.query.userId || "demo";
+  const allTransactions = JSON.parse(
     readFileSync(new URL("./data/mockTransactions.json", import.meta.url))
   );
+
+  // Scope to one profile. Untagged seed rows belong to the "demo" sandbox, so
+  // the demo view keeps the rich showcase while a real logged-in user (their
+  // Auth0 sub) starts from a clean, empty history.
+  const transactions = allTransactions.filter((t) => (t.userId || "demo") === userId);
 
   // Group all transactions by category, tracking per-month totals for trends.
   const byCategory = {};
