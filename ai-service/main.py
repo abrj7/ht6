@@ -12,9 +12,13 @@ in the backend (see PRD section 4).
 import os
 import random
 
+from typing import Optional
+
 from fastapi import FastAPI
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from dotenv import load_dotenv
+
+from personas import build_persona, chat_reply, compatibility_score
 
 load_dotenv()
 
@@ -28,6 +32,22 @@ class CoachRequest(BaseModel):
     spendSummary: dict
     goalAmount: float
     tone: str = "encouraging"
+
+
+class PersonaRequest(BaseModel):
+    property: dict = Field(..., description="Stay22-shaped property facts")
+    userVibes: list[str] = Field(default_factory=list)
+
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+
+class PersonaChatRequest(BaseModel):
+    persona: dict
+    messages: list[ChatMessage]
+    bookUrl: Optional[str] = None
 
 
 def _top_category(spend_summary: dict):
@@ -88,6 +108,33 @@ def coach(req: CoachRequest):
     # goalAmount + tone. Do not silently fall back to a generic model in the
     # demo path (PRD section 6, item 4).
     raise NotImplementedError("FreeSolo inference not wired up yet")
+
+
+@app.post("/persona")
+def persona(req: PersonaRequest):
+    """Fact → dating persona for Suite Hearts deck cards."""
+    built = build_persona(req.property)
+    score = compatibility_score(built, req.userVibes)
+    return {
+        "persona": built,
+        "compatibility": score,
+        "mode": "stub" if STUB_MODE else "freesolo",
+    }
+
+
+@app.post("/persona/chat")
+def persona_chat(req: PersonaChatRequest):
+    """In-character hotel persona chat — steers toward Stay22 booking."""
+    if STUB_MODE:
+        messages = [m.model_dump() for m in req.messages]
+        reply = chat_reply(req.persona, messages, req.bookUrl)
+        return {"reply": reply, "mode": "stub"}
+
+    # TODO (Person C / FreeSolo track): replace stub chat_reply with fine-tuned
+    # Suite Hearts persona model trained on training_data/personas_sft.jsonl.
+    # Prompt = persona JSON + user messages + bookUrl; model must stay in character
+    # and nudge toward booking without breaking the /coach contract.
+    raise NotImplementedError("FreeSolo persona chat inference not wired up yet")
 
 
 @app.get("/health")
