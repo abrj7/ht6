@@ -1,0 +1,65 @@
+services:
+  - type: web
+    name: yonder-backend
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 4000
+      - key: AI_SERVICE_URL
+        fromService:
+          type: web
+          name: yonder-ai-service
+          property: hostport
+      - key: CHEXY_SERVICE_URL
+        fromService:
+          type: web
+          name: yonder-chexy-integration
+          property: hostport
+      - key: STAY22_API_KEY
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: AUTH0_DOMAIN
+        sync: false
+      - key: AUTH0_AUDIENCE
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: ELEVENLABS_VOICE_ID
+        sync: false
+
+  - type: web
+    name: yonder-chexy-integration
+    runtime: node
+    rootDir: chexy-integration
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 5002
+      - key: CHEXY_API_KEY
+        sync: false
+      - key: CHEXY_API_URL
+        sync: false
+
+  - type: web
+    name: yonder-ai-service
+    runtime: python
+    rootDir: ai-service
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PORT
+        value: 5001
+      - key: FREESOLO_API_KEY
+        sync: false
+      - key: FREESOLO_BASE_URL
+        value: https://clado-ai--freesolo-lora-serving.modal.run/v1
+      - key: FREESOLO_MODEL
+        value: flash-1784433096-6a060015
