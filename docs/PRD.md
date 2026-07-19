@@ -99,8 +99,21 @@ Owns spend data ingestion/categorization and the sustainability comparison logic
 
 **Backend exposes to Frontend:**
 ```
-GET /api/opportunity?category=food_delivery&amount=150&prefs={...}
-→ { properties: [...Stay22 results], goalProgress: 0.62, lastUpdated: ISOtimestamp }
+GET /api/opportunity?category=food_delivery&amount=150&type=optional(hotel|cabin|villa|hostel)
+→ {
+  properties: [...enriched Stay22 results with cheapestTotal, destination, bookUrl],
+  goalProgress: number 0-1,
+  lastUpdated: ISOtimestamp,
+  coachMessage: string,
+  meta: { stay22Mode: "live"|"mock" },
+  routes: [{
+    category, destination, monthlyTotal, recoverableSpend, livePrice, progress,
+    bookUrl, priceDelta,           // number|null, negative = price dropped
+    priceHistory: [{ t, price }],  // oldest→newest
+    property: { name, type, rating, capacity, freeCancellation, instantBook },  // best-value property
+    green: { distanceKm, carbonKgCO2e, greenerAlternative }  // greenerAlternative may be null
+  }]
+}
 ```
 
 **AI-service exposes to Backend:**
