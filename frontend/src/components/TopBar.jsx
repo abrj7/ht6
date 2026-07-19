@@ -2,7 +2,7 @@
 // (from /api/market once it has loaded), last-updated timestamp.
 
 import AuthControls from "./AuthControls.jsx";
-import { CURRENCIES, useCurrency } from "../currency.jsx";
+import { useCurrency } from "../currency.jsx";
 
 const TITLES = {
   dashboard: "Dashboard",
@@ -13,25 +13,11 @@ const TITLES = {
 };
 
 export default function TopBar({ view, buyingPower, lastUpdated, theme, onToggleTheme }) {
-  const { code, setCode, format } = useCurrency();
+  const { format } = useCurrency();
   return (
     <div className="topbar">
       <h1 className="topbar-title">{TITLES[view] || "Yonder"}</h1>
       <div className="topbar-right">
-        <label className="currency-picker" title="Display currency (static rates)">
-          <select
-            className="currency-picker__select"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            aria-label="Display currency"
-          >
-            {CURRENCIES.map((c) => (
-              <option key={c.code} value={c.code}>
-                {c.flag} {c.code} · {c.name}
-              </option>
-            ))}
-          </select>
-        </label>
         <button className="theme-toggle" type="button" onClick={onToggleTheme}>
           {theme === "light" ? "🌙 Dark" : "☀ Bright"}
         </button>

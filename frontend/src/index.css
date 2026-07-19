@@ -232,54 +232,6 @@ body {
   transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
-.currency-picker {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  border: 1px solid var(--panel-line);
-  background: var(--panel);
-  border-radius: 999px;
-  padding: 0.25rem 0.5rem 0.25rem 0.6rem;
-  cursor: pointer;
-}
-
-.currency-picker:hover {
-  border-color: var(--flap-amber);
-}
-
-.currency-picker__flag {
-  font-size: 0.95rem;
-  line-height: 1;
-}
-
-.currency-picker__select {
-  border: none;
-  background: transparent;
-  color: var(--chalk);
-  font-family: var(--font-body);
-  font-size: 0.63rem;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  max-width: 5.5rem;
-  appearance: none;
-}
-
-.currency-picker__select:focus {
-  outline: none;
-}
-
-.currency-picker__select:focus-visible {
-  outline: 2px solid var(--flap-amber);
-  outline-offset: 2px;
-  border-radius: 3px;
-}
-
-/* Native dropdown list stays readable in dark mode */
-.currency-picker__select option {
-  background: var(--panel);
-  color: var(--chalk);
-}
-
 .theme-toggle:hover {
   transform: translateY(-1px);
   border-color: var(--flap-amber);
