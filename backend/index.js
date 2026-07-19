@@ -87,10 +87,10 @@ function seedBackdatedHistory(currentPrice) {
 function recordPrice(destination, price) {
   if (typeof price !== "number") return;
   let hist = priceHistory.get(destination);
-  if (!hist) {
-    // Seed backdated points in BOTH modes. Stay22 is snapshot-only and sits on
-    // a ~10-min cache, so live mode would otherwise start with 0-1 points and
-    // the chart would render "waiting for price history" indefinitely.
+  if (!hist || hist.length < 2) {
+    // Seed a short walk ending at the first observed price so charts render
+    // immediately — in live mode the newest point is still the real Stay22 quote;
+    // subsequent 10-min polls append genuine history after that.
     hist = seedBackdatedHistory(price);
     priceHistory.set(destination, hist);
   }
@@ -188,10 +188,11 @@ function bestValueProperty(results) {
 
 function propertySummary(p) {
   if (!p) return null;
+  // Live Stay22 returns rating/capacity as objects; mock uses scalars.
   const rating =
-    typeof p.rating === "object" && p.rating ? p.rating.value ?? null : p.rating ?? null;
+    typeof p.rating === "number" ? p.rating : p.rating?.value ?? p.rating?.guest ?? null;
   const capacity =
-    typeof p.capacity === "object" && p.capacity ? p.capacity.guests ?? null : p.capacity ?? null;
+    typeof p.capacity === "number" ? p.capacity : p.capacity?.guests ?? p.capacity?.beds ?? null;
   return {
     name: p.name ?? null,
     type: p.type ?? null,
@@ -303,12 +304,42 @@ async function getSpendSummary(userId = "demo") {
   }
 }
 
-async function getCoachMessage(spendSummary, goalAmount, tone = "encouraging") {
+// FreeSolo was trained on trusted facts calculated HERE — never ask the model
+// to invent months-to-goal / remaining / prices. Shape matches the FreeSolo
+// handoff: category, monthlyTotal, recoverableMonthly, remaining,
+// estimatedMonths, destination, propertyName.
+function buildCoachFacts({
+  category,
+  spendSummary,
+  recoverable,
+  goalAmount,
+  destination,
+  propertyName,
+}) {
+  const catRow = spendSummary?.categories?.find((c) => c.name === category);
+  const monthlyTotal = catRow?.monthlyTotal ?? recoverable;
+  const recoverableMonthly = catRow?.recoverableSpend ?? recoverable;
+  const remaining = Math.max(0, Number((goalAmount - recoverableMonthly).toFixed(2)));
+  const estimatedMonths =
+    recoverableMonthly > 0 ? Math.max(1, Math.round(goalAmount / recoverableMonthly)) : null;
+
+  return {
+    category: category.replaceAll("_", " "),
+    monthlyTotal: Number(monthlyTotal.toFixed?.(2) ?? monthlyTotal),
+    recoverableMonthly: Number(Number(recoverableMonthly).toFixed(2)),
+    remaining,
+    estimatedMonths,
+    destination,
+    propertyName: propertyName ?? null,
+  };
+}
+
+async function getCoachMessage(coachFacts, goalAmount, tone = "encouraging") {
   try {
     const res = await fetch(`${AI_SERVICE_URL}/coach`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ spendSummary: spendSummary ?? {}, goalAmount, tone }),
+      body: JSON.stringify({ spendSummary: coachFacts ?? {}, goalAmount, tone }),
     });
     if (!res.ok) throw new Error(`ai-service ${res.status}`);
     const data = await res.json();
@@ -403,16 +434,22 @@ app.get("/api/opportunity", async (req, res) => {
     const destination =
       destinationOverrides[category] || CATEGORY_DESTINATIONS[category] || "Banff, AB";
     const { checkin, checkout } = nextWeekendDates();
-    // Budget band around the recoverable amount so results are actually reachable.
+    // Soft budget hint — Stay22's min/max often returns empty for pricey
+    // destinations (e.g. Banff weekend nights >> $150 recoverable), so we
+    // fall back to an unfiltered search when the band yields nothing.
     const budget = {
       min: Math.max(20, Math.round(recoverable * 0.25)),
-      max: Math.round(recoverable * 2.5),
+      max: Math.max(Math.round(recoverable * 2.5), 500),
     };
 
-    const [stay22, spendSummary] = await Promise.all([
-      getAccommodations(destination, { type, ...budget }),
+    const [spendSummary, stay22Budgeted] = await Promise.all([
       getSpendSummary(userId),
+      getAccommodations(destination, { type, ...budget }),
     ]);
+    let stay22 = stay22Budgeted;
+    if (!(stay22.results ?? []).length) {
+      stay22 = await getAccommodations(destination, { type });
+    }
 
     const properties = (stay22.results ?? []).map((p) => ({
       ...p,
@@ -421,33 +458,28 @@ app.get("/api/opportunity", async (req, res) => {
       bookUrl: buildBookUrl(p, destination, checkin, checkout),
     }));
 
-    const target = properties
-      .map((p) => p.cheapestTotal)
-      .filter((t) => t !== null)
-      .sort((a, b) => a - b)[0];
+    const bestProperty = bestValueProperty(properties);
+    const target = bestProperty?.cheapestTotal
+      ?? properties
+        .map((p) => p.cheapestTotal)
+        .filter((t) => t !== null)
+        .sort((a, b) => a - b)[0];
     const goalProgress = target ? Math.min(1, recoverable / target) : 0;
-    const bestProperty = properties.find((p) => p.cheapestTotal === target);
 
     // Flat facts shape the FreeSolo yonder-coach adapter was actually
     // trained on (see ai-service/dataset/train.jsonl) - not the raw chexy
     // categories[] blob, which is off-distribution for the model.
-    const matchedCategory = spendSummary?.categories?.find((c) => c.name === category);
-    const goalAmount = target ?? recoverable;
-    const remaining = Math.max(0, goalAmount - recoverable);
-    const estimatedMonths = recoverable > 0 ? Math.max(1, Math.round(goalAmount / recoverable)) : null;
-    const coachFacts = {
-      category: category.replaceAll("_", " "),
-      monthlyTotal: matchedCategory?.monthlyTotal ?? recoverable,
-      recoverableMonthly: matchedCategory?.recoverableSpend ?? recoverable,
-      remaining,
-      estimatedMonths,
+    const coachFacts = buildCoachFacts({
+      category,
+      spendSummary,
+      recoverable,
+      goalAmount: target ?? recoverable,
       destination,
-      propertyName: bestProperty?.name,
-    };
-
+      propertyName: bestProperty?.name ?? null,
+    });
     const coachMessage =
-      (await getCoachMessage(coachFacts, goalAmount)) ??
-      `Redirect $${recoverable}/mo from ${category.replaceAll("_", " ")} and ${destination} is ${Math.round(goalProgress * 100)}% funded.`;
+      (await getCoachMessage(coachFacts, target ?? recoverable)) ??
+      `Redirect $${coachFacts.recoverableMonthly}/mo from ${coachFacts.category} and ${destination} is ${Math.round(goalProgress * 100)}% funded.`;
 
     // One route row per category. If chexy is down, still serve a row for the
     // requested category so the board isn't empty.

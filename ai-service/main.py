@@ -56,28 +56,38 @@ class PersonaChatRequest(BaseModel):
     bookUrl: Optional[str] = None
 
 
-def _top_category(spend_summary: dict):
-    """Pick the category to ground the message in.
-
-    Backend sends the flat {category, recoverableMonthly, monthlyTotal, ...}
-    shape the yonder-coach adapter was trained on (see
-    ai-service/dataset/train.jsonl). Fall back to the raw chexy
-    {categories: [...]} blob for callers that haven't been updated yet.
-    """
-    if "category" in spend_summary:
+def _facts_from_summary(spend_summary: dict):
+    """Prefer the FreeSolo handoff shape; fall back to a Chexy categories blob."""
+    if spend_summary.get("category") or spend_summary.get("recoverableMonthly"):
         return {
-            "name": spend_summary.get("category"),
-            "recoverableSpend": spend_summary.get("recoverableMonthly"),
-            "monthlyTotal": spend_summary.get("monthlyTotal"),
+            "category": str(spend_summary.get("category") or "spending").replace("_", " "),
+            "recoverable": float(
+                spend_summary.get("recoverableMonthly")
+                or spend_summary.get("monthlyTotal")
+                or 0
+            ),
+            "months": spend_summary.get("estimatedMonths"),
+            "destination": spend_summary.get("destination"),
+            "remaining": spend_summary.get("remaining"),
         }
 
     categories = spend_summary.get("categories") or []
     best = None
     for c in categories:
         amount = c.get("recoverableSpend") or c.get("monthlyTotal") or 0
-        if best is None or amount > (best.get("recoverableSpend") or best.get("monthlyTotal") or 0):
+        if best is None or amount > (
+            best.get("recoverableSpend") or best.get("monthlyTotal") or 0
+        ):
             best = c
-    return best
+    if not best:
+        return None
+    return {
+        "category": str(best.get("name") or "spending").replace("_", " "),
+        "recoverable": float(best.get("recoverableSpend") or best.get("monthlyTotal") or 0),
+        "months": None,
+        "destination": None,
+        "remaining": None,
+    }
 
 
 # Message templates grounded in real numbers. {cat} = category label,
@@ -99,13 +109,15 @@ STUB_TEMPLATES = {
 
 
 def _stub_message(req: CoachRequest) -> str:
-    top = _top_category(req.spendSummary)
-    recoverable = (top or {}).get("recoverableSpend") or (top or {}).get("monthlyTotal") or 0
-    cat = ((top or {}).get("name") or "spending").replace("_", " ")
+    facts = _facts_from_summary(req.spendSummary) or {}
+    recoverable = facts.get("recoverable") or 0
+    cat = facts.get("category") or "spending"
+    months_n = facts.get("months")
+    if not months_n and recoverable > 0 and req.goalAmount > 0:
+        months_n = max(1, round(req.goalAmount / recoverable))
 
-    if recoverable > 0 and req.goalAmount > 0:
-        months_to_goal = max(1, round(req.goalAmount / recoverable))
-        months = "1 month" if months_to_goal == 1 else f"{months_to_goal} months"
+    if recoverable > 0 and req.goalAmount > 0 and months_n:
+        months = "1 month" if months_n == 1 else f"{months_n} months"
         template = random.choice(STUB_TEMPLATES.get(req.tone, STUB_TEMPLATES["encouraging"]))
         return template.format(
             cat=cat,

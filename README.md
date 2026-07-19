@@ -33,7 +33,7 @@ mode so you can build immediately:
 | Service | Key | Without it |
 |---|---|---|
 | `backend` | `STAY22_API_KEY` | Serves realistic mock Stay22 results |
-| `ai-service` | `FREESOLO_API_KEY` (TBD) | Canned coaching messages |
+| `ai-service` | `FREESOLO_API_KEY` (+ base URL/model in `.env.example`) | Stub coaching messages |
 | `chexy-integration` | `CHEXY_API_KEY` (TBD) | Seeded mock transactions |
 | `frontend` | none | — |
 
@@ -63,7 +63,8 @@ message. Each service also exposes `GET /health`.
 - `backend` `GET /api/opportunity` → pulls spend summary, matches categories to
   destinations, prices them (mock Stay22 until a key is set, with the 10-min
   cache already enforced), calls `ai-service /coach` for the nudge
-- `ai-service` `POST /coach` → tone-aware stub messages (FreeSolo TBD)
+- `ai-service` `POST /coach` → FreeSolo-trained coaching when keyed, else stubs.
+  Backend sends trusted facts (`recoverableMonthly`, `remaining`, `estimatedMonths`, …)
 - `frontend` → polls the backend, renders the board, falls back to demo rows if
   the backend is down
 
