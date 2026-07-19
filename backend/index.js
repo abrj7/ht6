@@ -172,11 +172,16 @@ function bestValueProperty(results) {
 
 function propertySummary(p) {
   if (!p) return null;
+  // Live Stay22 returns rating/capacity as objects; mock uses scalars.
+  const rating =
+    typeof p.rating === "number" ? p.rating : p.rating?.value ?? p.rating?.guest ?? null;
+  const capacity =
+    typeof p.capacity === "number" ? p.capacity : p.capacity?.guests ?? p.capacity?.beds ?? null;
   return {
     name: p.name ?? null,
     type: p.type ?? null,
-    rating: p.rating ?? null,
-    capacity: p.capacity ?? null,
+    rating,
+    capacity,
     freeCancellation: p.policies?.freeCancellation ?? null,
     instantBook: p.policies?.instantBook ?? null,
   };
@@ -365,16 +370,22 @@ app.get("/api/opportunity", async (req, res) => {
   try {
     const destination = CATEGORY_DESTINATIONS[category] ?? "Banff, AB";
     const { checkin, checkout } = nextWeekendDates();
-    // Budget band around the recoverable amount so results are actually reachable.
+    // Soft budget hint — Stay22's min/max often returns empty for pricey
+    // destinations (e.g. Banff weekend nights >> $150 recoverable), so we
+    // fall back to an unfiltered search when the band yields nothing.
     const budget = {
       min: Math.max(20, Math.round(recoverable * 0.25)),
-      max: Math.round(recoverable * 2.5),
+      max: Math.max(Math.round(recoverable * 2.5), 500),
     };
 
-    const [stay22, spendSummary] = await Promise.all([
-      getAccommodations(destination, { type, ...budget }),
+    const [spendSummary, stay22Budgeted] = await Promise.all([
       getSpendSummary(),
+      getAccommodations(destination, { type, ...budget }),
     ]);
+    let stay22 = stay22Budgeted;
+    if (!(stay22.results ?? []).length) {
+      stay22 = await getAccommodations(destination, { type });
+    }
 
     const properties = (stay22.results ?? []).map((p) => ({
       ...p,
