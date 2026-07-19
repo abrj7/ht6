@@ -1,10 +1,14 @@
 import { auth } from "express-oauth2-jwt-bearer";
 import { getDb } from "./mongoClient.js";
 
-const jwtCheck = auth({
-  audience: process.env.AUTH0_AUDIENCE,
-  issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}`,
-});
+const authConfigured = Boolean(process.env.AUTH0_AUDIENCE && process.env.AUTH0_DOMAIN);
+
+const jwtCheck = authConfigured
+  ? auth({
+      audience: process.env.AUTH0_AUDIENCE,
+      issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}`,
+    })
+  : (req, res, next) => next();
 
 export function authMiddleware() {
   return jwtCheck;
@@ -14,7 +18,9 @@ export async function ensureUserProfile(req, res, next) {
   try {
     const auth0UserId = req.auth?.payload?.sub;
     if (!auth0UserId) {
-      return res.status(401).json({ error: "Missing authenticated user" });
+      return authConfigured
+        ? res.status(401).json({ error: "Missing authenticated user" })
+        : next();
     }
 
     const db = await getDb();
