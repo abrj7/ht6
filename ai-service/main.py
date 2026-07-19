@@ -57,7 +57,20 @@ class PersonaChatRequest(BaseModel):
 
 
 def _top_category(spend_summary: dict):
-    """Pick the biggest recoverable category out of the chexy summary."""
+    """Pick the category to ground the message in.
+
+    Backend sends the flat {category, recoverableMonthly, monthlyTotal, ...}
+    shape the yonder-coach adapter was trained on (see
+    ai-service/dataset/train.jsonl). Fall back to the raw chexy
+    {categories: [...]} blob for callers that haven't been updated yet.
+    """
+    if "category" in spend_summary:
+        return {
+            "name": spend_summary.get("category"),
+            "recoverableSpend": spend_summary.get("recoverableMonthly"),
+            "monthlyTotal": spend_summary.get("monthlyTotal"),
+        }
+
     categories = spend_summary.get("categories") or []
     best = None
     for c in categories:

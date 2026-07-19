@@ -355,9 +355,27 @@ app.get("/api/opportunity", async (req, res) => {
       .filter((t) => t !== null)
       .sort((a, b) => a - b)[0];
     const goalProgress = target ? Math.min(1, recoverable / target) : 0;
+    const bestProperty = properties.find((p) => p.cheapestTotal === target);
+
+    // Flat facts shape the FreeSolo yonder-coach adapter was actually
+    // trained on (see ai-service/dataset/train.jsonl) - not the raw chexy
+    // categories[] blob, which is off-distribution for the model.
+    const matchedCategory = spendSummary?.categories?.find((c) => c.name === category);
+    const goalAmount = target ?? recoverable;
+    const remaining = Math.max(0, goalAmount - recoverable);
+    const estimatedMonths = recoverable > 0 ? Math.max(1, Math.round(goalAmount / recoverable)) : null;
+    const coachFacts = {
+      category: category.replaceAll("_", " "),
+      monthlyTotal: matchedCategory?.monthlyTotal ?? recoverable,
+      recoverableMonthly: matchedCategory?.recoverableSpend ?? recoverable,
+      remaining,
+      estimatedMonths,
+      destination,
+      propertyName: bestProperty?.name,
+    };
 
     const coachMessage =
-      (await getCoachMessage(spendSummary, target ?? recoverable)) ??
+      (await getCoachMessage(coachFacts, goalAmount)) ??
       `Redirect $${recoverable}/mo from ${category.replaceAll("_", " ")} and ${destination} is ${Math.round(goalProgress * 100)}% funded.`;
 
     // One route row per category. If chexy is down, still serve a row for the
