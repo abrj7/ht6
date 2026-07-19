@@ -266,12 +266,42 @@ async function getSpendSummary() {
   }
 }
 
-async function getCoachMessage(spendSummary, goalAmount, tone = "encouraging") {
+// FreeSolo was trained on trusted facts calculated HERE — never ask the model
+// to invent months-to-goal / remaining / prices. Shape matches the FreeSolo
+// handoff: category, monthlyTotal, recoverableMonthly, remaining,
+// estimatedMonths, destination, propertyName.
+function buildCoachFacts({
+  category,
+  spendSummary,
+  recoverable,
+  goalAmount,
+  destination,
+  propertyName,
+}) {
+  const catRow = spendSummary?.categories?.find((c) => c.name === category);
+  const monthlyTotal = catRow?.monthlyTotal ?? recoverable;
+  const recoverableMonthly = catRow?.recoverableSpend ?? recoverable;
+  const remaining = Math.max(0, Number((goalAmount - recoverableMonthly).toFixed(2)));
+  const estimatedMonths =
+    recoverableMonthly > 0 ? Math.max(1, Math.round(goalAmount / recoverableMonthly)) : null;
+
+  return {
+    category: category.replaceAll("_", " "),
+    monthlyTotal: Number(monthlyTotal.toFixed?.(2) ?? monthlyTotal),
+    recoverableMonthly: Number(Number(recoverableMonthly).toFixed(2)),
+    remaining,
+    estimatedMonths,
+    destination,
+    propertyName: propertyName ?? null,
+  };
+}
+
+async function getCoachMessage(coachFacts, goalAmount, tone = "encouraging") {
   try {
     const res = await fetch(`${AI_SERVICE_URL}/coach`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ spendSummary: spendSummary ?? {}, goalAmount, tone }),
+      body: JSON.stringify({ spendSummary: coachFacts ?? {}, goalAmount, tone }),
     });
     if (!res.ok) throw new Error(`ai-service ${res.status}`);
     const data = await res.json();
@@ -350,15 +380,25 @@ app.get("/api/opportunity", async (req, res) => {
       bookUrl: buildBookUrl(p, destination, checkin, checkout),
     }));
 
-    const target = properties
-      .map((p) => p.cheapestTotal)
-      .filter((t) => t !== null)
-      .sort((a, b) => a - b)[0];
+    const bestProperty = bestValueProperty(properties);
+    const target = bestProperty?.cheapestTotal
+      ?? properties
+        .map((p) => p.cheapestTotal)
+        .filter((t) => t !== null)
+        .sort((a, b) => a - b)[0];
     const goalProgress = target ? Math.min(1, recoverable / target) : 0;
 
+    const coachFacts = buildCoachFacts({
+      category,
+      spendSummary,
+      recoverable,
+      goalAmount: target ?? recoverable,
+      destination,
+      propertyName: bestProperty?.name ?? null,
+    });
     const coachMessage =
-      (await getCoachMessage(spendSummary, target ?? recoverable)) ??
-      `Redirect $${recoverable}/mo from ${category.replaceAll("_", " ")} and ${destination} is ${Math.round(goalProgress * 100)}% funded.`;
+      (await getCoachMessage(coachFacts, target ?? recoverable)) ??
+      `Redirect $${coachFacts.recoverableMonthly}/mo from ${coachFacts.category} and ${destination} is ${Math.round(goalProgress * 100)}% funded.`;
 
     // One route row per category. If chexy is down, still serve a row for the
     // requested category so the board isn't empty.
