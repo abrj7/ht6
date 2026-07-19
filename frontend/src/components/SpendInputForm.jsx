@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+import { useAuth0 } from "@auth0/auth0-react";
+import { useAuthApi } from "../auth.js";
 
 const CATEGORIES = [
   { value: "food_delivery", label: "Food delivery" },
@@ -13,6 +15,8 @@ const formatCategory = (value) => {
 };
 
 export default function SpendInputForm({ onSpendUpdated }) {
+  const { isAuthenticated, loginWithRedirect, isLoading: authLoading } = useAuth0();
+  const { fetchAuth } = useAuthApi();
   const [category, setCategory] = useState("food_delivery");
   const [amount, setAmount] = useState("0.00");
   const [merchant, setMerchant] = useState("");
@@ -29,19 +33,25 @@ export default function SpendInputForm({ onSpendUpdated }) {
     event.preventDefault();
     if (!canSubmit) return;
 
+    if (!isAuthenticated) {
+      return loginWithRedirect();
+    }
+
     setLoading(true);
     setStatus(null);
 
     try {
-      const res = await fetch("/api/spend", {
+      const res = await fetchAuth("/api/spend", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ category, amount: parsedAmount, merchant: merchant || "Manual entry" }),
       });
+
       if (!res.ok) {
         const payload = await res.json().catch(() => ({}));
         throw new Error(payload.error || "Failed to submit spend");
       }
+
       setStatus({ type: "success", message: `Recorded $${parsedAmount.toFixed(2)} for ${formatCategory(category)}.` });
       setAmount("0.00");
       setMerchant("");
@@ -94,10 +104,20 @@ export default function SpendInputForm({ onSpendUpdated }) {
         </label>
 
         <div className="spend-actions">
-          <button type="submit" className="button button--primary" disabled={!canSubmit || loading}>
+          <button
+            type="submit"
+            className="button button--primary"
+            disabled={!canSubmit || loading || authLoading}
+          >
             {loading ? "Saving..." : "Save spend"}
           </button>
-          <p className="spend-note">{note}</p>
+          <p className="spend-note">
+            {isAuthenticated
+              ? note
+              : authLoading
+              ? "Checking authentication..."
+              : "Log in to submit spend and keep it tied to your Auth0 profile."}
+          </p>
         </div>
       </form>
       {status && (

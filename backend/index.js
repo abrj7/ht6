@@ -15,6 +15,7 @@ import ragRouter from "./routes/rag.js";
 import voiceRouter from "./routes/voice.js";
 import nowcastRouter from "./routes/nowcast.js";
 import matchRouter from "./routes/match.js";
+import { authMiddleware, ensureUserProfile } from "./auth.js";
 import { insertTransaction, getDb } from "./mongoClient.js";
 
 const app = express();
@@ -26,6 +27,7 @@ app.use("/api/ask", ragRouter);
 app.use("/api/voice", voiceRouter);
 app.use("/api/nowcast", nowcastRouter);
 app.use("/api/match", matchRouter);
+app.use("/api/spend", authMiddleware(), ensureUserProfile);
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://localhost:5001";
 const CHEXY_SERVICE_URL = process.env.CHEXY_SERVICE_URL || "http://localhost:5002";

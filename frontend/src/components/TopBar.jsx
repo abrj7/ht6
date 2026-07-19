@@ -1,6 +1,8 @@
 // Slim bar above the content region: current view title, buying-power chip
 // (from /api/market once it has loaded), last-updated timestamp.
 
+import AuthControls from "./AuthControls.jsx";
+
 const TITLES = {
   dashboard: "Dashboard",
   exchange: "Yonder Exchange",
@@ -27,6 +29,7 @@ export default function TopBar({ view, buyingPower, lastUpdated, theme, onToggle
         {lastUpdated && (
           <span className="topbar-updated">upd {lastUpdated.toLocaleTimeString()}</span>
         )}
+        <AuthControls />
       </div>
     </div>
   );
