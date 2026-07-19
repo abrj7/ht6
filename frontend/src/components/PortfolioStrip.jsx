@@ -1,4 +1,5 @@
 import Sparkline from "./Sparkline.jsx";
+import { useCurrency } from "../currency.jsx";
 
 // Horizontally scrollable row of compact portfolio cards, one per route.
 // Clicking a card selects the route for the main chart panel.
@@ -8,13 +9,14 @@ function labelize(category) {
 }
 
 function DeltaChip({ delta }) {
+  const { formatInt } = useCurrency();
   if (delta == null || !Number.isFinite(delta) || delta === 0) {
     return <span className="delta-chip delta-chip--flat">{"\u25AC"} flat</span>;
   }
   const dropped = delta < 0;
   return (
     <span className={`delta-chip ${dropped ? "delta-chip--down" : "delta-chip--up"}`}>
-      {dropped ? "\u25BC" : "\u25B2"} ${Math.round(Math.abs(delta))}
+      {dropped ? "\u25BC" : "\u25B2"} {formatInt(Math.abs(delta))}
     </span>
   );
 }
@@ -30,6 +32,7 @@ function SkeletonCard() {
 }
 
 export default function PortfolioStrip({ routes, selectedCategory, onSelect }) {
+  const { formatInt } = useCurrency();
   if (!routes) {
     return (
       <div className="portfolio-strip" aria-busy="true">
@@ -57,7 +60,7 @@ export default function PortfolioStrip({ routes, selectedCategory, onSelect }) {
             <span className="portfolio-card__destination">{r.destination}</span>
             <span className="portfolio-card__row">
               <span className="portfolio-card__price">
-                {Number.isFinite(r.livePrice) ? `$${Math.round(r.livePrice)}` : "\u2014"}
+                {Number.isFinite(r.livePrice) ? formatInt(r.livePrice) : "\u2014"}
               </span>
               <DeltaChip delta={r.priceDelta} />
             </span>

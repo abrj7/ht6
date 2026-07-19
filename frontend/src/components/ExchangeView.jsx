@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useCurrency } from "../currency.jsx";
 import TickerTape from "./TickerTape.jsx";
 import TickerCard from "./TickerCard.jsx";
 
@@ -21,6 +22,7 @@ function SkeletonCard() {
 }
 
 export default function ExchangeView({ market, live, lastUpdated, focusSymbol }) {
+  const { format } = useCurrency();
   const [expandedSymbol, setExpandedSymbol] = useState(focusSymbol || null);
 
   // Follow watchlist jumps that happen while this view is already mounted.
@@ -52,7 +54,7 @@ export default function ExchangeView({ market, live, lastUpdated, focusSymbol })
         <div>
           <div className="micro-label">Buying power</div>
           <div className="power-amount">
-            ${buyingPower.toFixed(2)}
+            {format(buyingPower)}
             <span className="power-note">funded by your cut spending</span>
           </div>
         </div>

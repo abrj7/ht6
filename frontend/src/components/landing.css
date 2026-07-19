@@ -1,0 +1,285 @@
+/* Yonder landing / gate — a single fixed full-screen stage. The page itself
+   never scrolls; a virtual-scroll wheel handler drives the card morph.
+   Theme-aware: bright (default) mirrors the reference light look, dark uses a
+   cinematic gradient. Renders instead of the dashboard shell while signed out. */
+
+.landing {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  touch-action: none;
+  font-family: var(--font-body, "Inter", sans-serif);
+}
+
+/* Theme surfaces */
+.landing--light {
+  --lp-ink: #1f2530;
+  --lp-dim: rgba(31, 37, 48, 0.6);
+  --lp-teal: #2f8a86;
+  background:
+    radial-gradient(1100px 700px at 50% -10%, #eef1f4 0%, transparent 60%),
+    linear-gradient(180deg, #fafafa, #f1f2f4);
+}
+.landing--dark {
+  --lp-ink: #f4f1ea;
+  --lp-dim: rgba(244, 241, 234, 0.62);
+  --lp-teal: #46c0b8;
+  background:
+    radial-gradient(1200px 700px at 50% -10%, #1b2330 0%, transparent 60%),
+    radial-gradient(900px 600px at 85% 110%, #14201f 0%, transparent 55%),
+    linear-gradient(180deg, #0a0d12, #12161d);
+}
+
+.lp-svg-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Theme toggle (top-right) */
+.lp-theme-toggle {
+  position: absolute;
+  top: 20px;
+  right: 22px;
+  z-index: 20;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(128, 128, 128, 0.28);
+  background: rgba(128, 128, 128, 0.12);
+  backdrop-filter: blur(8px);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.lp-theme-toggle:hover {
+  transform: scale(1.08);
+  background: rgba(128, 128, 128, 0.2);
+}
+
+/* ---------- Card stage ---------- */
+.lp-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lp-card {
+  will-change: transform;
+  cursor: pointer;
+}
+.lp-card__inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.lp-card__face {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  backface-visibility: hidden;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.lp-card__front img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.lp-card__fallback {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #26313f, #38506a 60%, #6b8fa8);
+}
+.lp-card__shade {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.14);
+  transition: background 0.3s ease;
+}
+.lp-card.group:hover .lp-card__shade {
+  background: transparent;
+}
+.lp-card__back {
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: linear-gradient(160deg, #141a22, #0d1218);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px;
+  text-align: center;
+}
+.lp-card__kicker {
+  font-size: 7px;
+  letter-spacing: 0.22em;
+  font-weight: 700;
+  color: var(--lp-teal);
+}
+.lp-card__place {
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.1;
+}
+
+/* ---------- Centered text layers (crossfade) ---------- */
+.lp-center-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 24px;
+  pointer-events: none; /* let wheel/parallax pass through to the stage */
+}
+.lp-center-layer--intro { z-index: 2; }
+.lp-center-layer--gate { z-index: 3; }
+
+.lp-intro-title {
+  font-size: clamp(26px, 4.4vw, 52px);
+  line-height: 1.08;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--lp-ink);
+  margin: 0;
+  max-width: 620px;
+}
+.lp-intro-hint {
+  margin-top: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  color: var(--lp-dim);
+}
+
+.lp-gate-content {
+  max-width: 520px;
+}
+.lp-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  color: var(--lp-teal);
+  margin-bottom: 14px;
+}
+.lp-gate-title {
+  font-size: clamp(24px, 3.4vw, 38px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--lp-ink);
+  margin: 0 0 16px;
+}
+.lp-gate-blurb {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--lp-dim);
+  margin: 0 auto 32px;
+  max-width: 440px;
+}
+.lp-gate-actions {
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+  flex-wrap: wrap;
+  pointer-events: auto; /* buttons stay clickable */
+}
+
+/* ---------- Liquid glass button ---------- */
+.lgb {
+  position: relative;
+  isolation: isolate;
+  min-width: 150px;
+  height: 54px;
+  padding: 0 30px;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  cursor: pointer;
+  color: var(--lp-ink);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: transform 0.25s ease;
+}
+.lgb:hover { transform: translateY(-2px) scale(1.03); }
+.lgb:active { transform: translateY(0) scale(0.99); }
+
+.lgb__shadow {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    inset 3px 3px 0.5px -3px rgba(255, 255, 255, 0.9),
+    inset -3px -3px 0.5px -3px rgba(255, 255, 255, 0.85),
+    inset 1px 1px 1px -0.5px rgba(255, 255, 255, 0.6),
+    inset -1px -1px 1px -0.5px rgba(255, 255, 255, 0.6),
+    inset 0 0 6px 6px rgba(255, 255, 255, 0.12),
+    inset 0 0 2px 2px rgba(255, 255, 255, 0.06);
+}
+.landing--light .lgb__shadow {
+  background: rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 8px 22px rgba(31, 37, 48, 0.16),
+    inset 3px 3px 0.5px -3px rgba(255, 255, 255, 1),
+    inset -3px -3px 0.5px -3px rgba(255, 255, 255, 0.9),
+    inset 1px 1px 1px -0.5px rgba(255, 255, 255, 0.8),
+    inset 0 0 6px 6px rgba(255, 255, 255, 0.4),
+    inset 0 0 0 1px rgba(31, 37, 48, 0.06);
+}
+
+.lgb__glass {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  overflow: hidden;
+  backdrop-filter: url(#container-glass) blur(2px) saturate(1.4);
+  -webkit-backdrop-filter: blur(3px) saturate(1.4);
+}
+
+.lgb__label {
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.28);
+}
+.landing--light .lgb__label { text-shadow: none; }
+
+/* Tinted (Sign up) = warmer, more saturated primary */
+.lgb--tinted .lgb__shadow {
+  background: linear-gradient(
+    135deg,
+    rgba(70, 192, 184, 0.4),
+    rgba(47, 138, 134, 0.28)
+  );
+  box-shadow:
+    0 10px 30px rgba(47, 138, 134, 0.42),
+    inset 3px 3px 0.5px -3px rgba(255, 255, 255, 0.9),
+    inset -3px -3px 0.5px -3px rgba(255, 255, 255, 0.85),
+    inset 1px 1px 1px -0.5px rgba(255, 255, 255, 0.65),
+    inset 0 0 8px 6px rgba(255, 255, 255, 0.14);
+}
+.lgb--tinted .lgb__label { color: #ffffff; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.3); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lgb:hover { transform: none; }
+}

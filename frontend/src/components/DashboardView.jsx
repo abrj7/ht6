@@ -4,6 +4,7 @@ import LineChart from "./LineChart.jsx";
 import SpendInputForm from "./SpendInputForm.jsx";
 import TripSettings from "./TripSettings.jsx";
 import PhotoCarousel from "./PhotoCarousel.jsx";
+import { useCurrency } from "../currency.jsx";
 import Watchlist from "./Watchlist.jsx";
 import RouteRow from "./RouteRow.jsx";
 
@@ -28,6 +29,7 @@ function routeProgress(route) {
 }
 
 function ChartPanel({ route }) {
+  const { formatInt } = useCurrency();
   if (!route) {
     return (
       <section className="panel chart-panel" aria-busy="true">
@@ -61,11 +63,11 @@ function ChartPanel({ route }) {
         </div>
         <div className="chart-head__quote">
           <span className="chart-head__price flap">
-            {Number.isFinite(route.livePrice) ? `$${Math.round(route.livePrice)}` : "\u2014"}
+            {Number.isFinite(route.livePrice) ? formatInt(route.livePrice) : "\u2014"}
           </span>
           {Number.isFinite(delta) && delta !== 0 && (
             <span className={`delta-chip ${dropped ? "delta-chip--down" : "delta-chip--up"}`}>
-              {dropped ? "\u25BC" : "\u25B2"} ${Math.round(Math.abs(delta))} vs yesterday
+              {dropped ? "\u25BC" : "\u25B2"} {formatInt(Math.abs(delta))} vs yesterday
             </span>
           )}
         </div>
@@ -84,8 +86,8 @@ function ChartPanel({ route }) {
           </div>
           {Number.isFinite(route.recoverableSpend) && (
             <span className="chart-goal__note">
-              ${Math.round(route.recoverableSpend)}/mo recoverable vs $
-              {Number.isFinite(route.livePrice) ? Math.round(route.livePrice) : "\u2014"} live price
+              {formatInt(route.recoverableSpend)}/mo recoverable vs{" "}
+              {Number.isFinite(route.livePrice) ? formatInt(route.livePrice) : "\u2014"} live price
             </span>
           )}
         </div>

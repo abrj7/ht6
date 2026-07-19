@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useCurrency } from "../currency.jsx";
 import "./match.css";
 
 const API_BASE = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
@@ -48,6 +49,7 @@ function initials(name = "?") {
 }
 
 export default function MatchView() {
+  const { formatInt } = useCurrency();
   const [phase, setPhase] = useState("quiz");
   const [selectedVibes, setSelectedVibes] = useState(["adventure", "nature"]);
   const [city, setCity] = useState("Banff, AB");
@@ -225,7 +227,7 @@ export default function MatchView() {
         </div>
         <div className="match-card-body">
           <div className="match-card-name">
-            {p.displayName}, {card.property?.price != null ? `$${card.property.price}` : "—"}
+            {p.displayName}, {card.property?.price != null ? formatInt(card.property.price) : "—"}
           </div>
           <div className="match-card-archetype">{p.archetype}</div>
           <p className="match-card-bio">{p.bio}</p>

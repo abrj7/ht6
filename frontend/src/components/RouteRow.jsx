@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Sparkline from "./Sparkline.jsx";
+import { useCurrency } from "../currency.jsx";
 
 function labelize(category) {
   return category.replaceAll("_", " ").replace(/^./, (c) => c.toUpperCase());
@@ -18,6 +19,7 @@ function Flap({ value, tick }) {
 }
 
 function DeltaChip({ delta }) {
+  const { formatInt } = useCurrency();
   if (delta == null || !Number.isFinite(delta) || delta === 0) return null;
   const dropped = delta < 0;
   return (
@@ -25,7 +27,7 @@ function DeltaChip({ delta }) {
       className={`delta-chip ${dropped ? "delta-chip--down" : "delta-chip--up"}`}
       title={dropped ? "Price dropped since yesterday - you're closer to the goal" : "Price rose since yesterday"}
     >
-      {dropped ? "\u25BC" : "\u25B2"} ${Math.round(Math.abs(delta))}
+      {dropped ? "\u25BC" : "\u25B2"} {formatInt(Math.abs(delta))}
     </span>
   );
 }
@@ -75,6 +77,7 @@ function GreenLine({ green }) {
 }
 
 export default function RouteRow({ route, expanded, onToggle }) {
+  const { formatInt } = useCurrency();
   const progress = routeProgress(route);
   const pct = Math.round(progress * 100);
   const panelId = `route-detail-${route.category}`;
@@ -106,7 +109,7 @@ export default function RouteRow({ route, expanded, onToggle }) {
         <Sparkline history={route.priceHistory} />
         <div className="route-price">
           <Flap
-          value={route.livePrice != null ? `$${Math.round(route.livePrice)}` : "\u2014"}
+          value={route.livePrice != null ? formatInt(route.livePrice) : "\u2014"}
           tick={tick}
         />
           <DeltaChip delta={route.priceDelta} />
@@ -133,8 +136,8 @@ export default function RouteRow({ route, expanded, onToggle }) {
             <GreenLine green={route.green} />
             {Number.isFinite(route.recoverableSpend) && Number.isFinite(route.monthlyTotal) && (
               <div className="detail-spend">
-                ${Math.round(route.recoverableSpend)}/mo recoverable of $
-                {Math.round(route.monthlyTotal)}/mo spend
+                {formatInt(route.recoverableSpend)}/mo recoverable of{" "}
+                {formatInt(route.monthlyTotal)}/mo spend
               </div>
             )}
           </div>

@@ -12,7 +12,10 @@ function timeLabel(iso) {
   return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }
 
+import { useCurrency } from "../currency.jsx";
+
 export default function LineChart({ history, id = "chart" }) {
+  const { formatInt } = useCurrency();
   const points = (Array.isArray(history) ? history : [])
     .map((p) => ({ t: p && p.t, price: Number(p && p.price) }))
     .filter((p) => Number.isFinite(p.price));
@@ -63,8 +66,8 @@ export default function LineChart({ history, id = "chart" }) {
 
       {/* min/max gridlines + price labels */}
       {[
-        { y: yMax, label: `$${Math.round(max)}` },
-        { y: yMin, label: `$${Math.round(min)}` },
+        { y: yMax, label: formatInt(max) },
+        { y: yMin, label: formatInt(min) },
       ].map(({ y, label }) => (
         <g key={label}>
           <line

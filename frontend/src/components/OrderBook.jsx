@@ -3,7 +3,7 @@
 // same room; best (lowest) quote is the teal "BEST" row, worst is dimmed with
 // the spread annotation.
 
-const money = (n) => `$${Number(n).toFixed(2)}`;
+import { useCurrency } from "../currency.jsx";
 
 // The live payload sends raw supplier keys (e.g. "hotelscom").
 const SUPPLIER_LABELS = {
@@ -16,6 +16,7 @@ const SUPPLIER_LABELS = {
 const supplierLabel = (s) => SUPPLIER_LABELS[String(s).toLowerCase()] || s;
 
 export default function OrderBook({ ticker, buyingPower, panelId }) {
+  const { format: money } = useCurrency();
   const book = Array.isArray(ticker.book) ? ticker.book : [];
   const prices = book.map((r) => Number(r.price)).filter(Number.isFinite);
   const maxPrice = prices.length ? Math.max(...prices) : 1;
@@ -55,7 +56,7 @@ export default function OrderBook({ ticker, buyingPower, panelId }) {
                 </td>
                 <td className="book-note">
                   {isWorst && Number.isFinite(price) && Number.isFinite(bestPrice)
-                    ? `+$${Math.round(price - bestPrice)} vs best`
+                    ? `+${money(price - bestPrice)} vs best`
                     : ""}
                 </td>
               </tr>

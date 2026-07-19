@@ -232,6 +232,42 @@ body {
   transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
+.currency-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--panel-line);
+  background: var(--panel);
+  border-radius: 999px;
+  padding: 0.25rem 0.5rem 0.25rem 0.6rem;
+  cursor: pointer;
+}
+
+.currency-picker:hover {
+  border-color: var(--flap-amber);
+}
+
+.currency-picker__flag {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.currency-picker__select {
+  border: none;
+  background: transparent;
+  color: var(--chalk);
+  font-family: var(--font-mono);
+  font-size: 0.63rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  max-width: 5.5rem;
+  appearance: none;
+}
+
+.currency-picker__select:focus {
+  outline: none;
+}
+
 .theme-toggle:hover {
   transform: translateY(-1px);
   border-color: var(--flap-amber);
@@ -1945,4 +1981,17 @@ body {
   font-size: 0.8rem;
   color: var(--chalk-dim);
   word-break: break-word;
+}
+
+/* Neutral hold while Auth0 restores a session (pre-landing) */
+.auth-splash {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #0a0d12;
+  color: rgba(244, 241, 234, 0.7);
+  font-family: var(--font-body, "Inter", sans-serif);
+  font-size: 14px;
+  letter-spacing: 0.04em;
 }

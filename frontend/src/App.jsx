@@ -9,8 +9,10 @@ import ConciergeView from "./components/ConciergeView.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import NowcastView from "./components/NowcastView.jsx";
 import MatchView from "./components/MatchView.jsx";
+import LandingPage from "./components/LandingPage.jsx";
 import { useOpportunity, useMarket } from "./feeds.js";
 import { loadGoals, saveGoals } from "./tripConfig.js";
+import { AUTH_CONFIGURED } from "./authConfig.js";
 
 // Person A owns this file and everything in /frontend except
 // components/MapView.jsx and components/map.css (map agent's).
@@ -27,8 +29,14 @@ export default function App() {
   });
   // Whose data drives the board: the logged-in user's Auth0 sub, or the shared
   // "demo" sandbox when signed out. Changing this reloads that profile's goals.
-  const { user, isAuthenticated } = useAuth0();
+  const { user, isAuthenticated, isLoading } = useAuth0();
   const userId = isAuthenticated && user?.sub ? user.sub : "demo";
+
+  // Landing gate. Signed-out visitors see the landing page; the dashboard is
+  // members-only. When Auth0 isn't configured we allow a local demo entry so
+  // the board is still reachable for judges without a live login.
+  const [demoEntered, setDemoEntered] = useState(false);
+  const gated = AUTH_CONFIGURED ? !isAuthenticated : !demoEntered;
 
   // User-defined saving goals, scoped per profile. Reload when the user changes
   // (login/logout) so profiles never see each other's goals.
@@ -79,6 +87,16 @@ export default function App() {
   const toggleTheme = () => {
     setTheme((current) => (current === "light" ? "dark" : "light"));
   };
+
+  // While Auth0 resolves an existing session, hold on a neutral splash so we
+  // don't flash the landing page at an already-signed-in user.
+  if (AUTH_CONFIGURED && isLoading) {
+    return <div className="auth-splash">Loading Yonder…</div>;
+  }
+
+  if (gated) {
+    return <LandingPage onEnterDemo={() => setDemoEntered(true)} />;
+  }
 
   return (
     <div className="shell">

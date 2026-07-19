@@ -1,5 +1,6 @@
 // Nowcast agent owns this file and nowcast.css.
 import { useEffect, useMemo, useState } from "react";
+import { useCurrency } from "../currency.jsx";
 import "./nowcast.css";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
@@ -339,6 +340,7 @@ function NowcastChart({ composite, events }) {
 }
 
 function CityCard({ city }) {
+  const { formatInt } = useCurrency();
   return (
     <article className="nowcast-city">
       <div className="nowcast-city__top">
@@ -349,7 +351,7 @@ function CityCard({ city }) {
       <span className={`nowcast-signal nowcast-signal--${city.signal}`}>{signalLabel(city.signal)}</span>
       <dl className="nowcast-city__stats">
         <dt>Median</dt>
-        <dd>{city.medianPrice != null ? `$${Math.round(city.medianPrice)}` : "—"}</dd>
+        <dd>{city.medianPrice != null ? formatInt(city.medianPrice) : "—"}</dd>
         <dt>Free cancel</dt>
         <dd>{city.freeCancelRate != null ? `${Math.round(city.freeCancelRate * 100)}%` : "—"}</dd>
         <dt>Instant</dt>

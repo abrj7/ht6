@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import TypewriterText from "./TypewriterText.jsx";
+import { useCurrency } from "../currency.jsx";
 import "./concierge.css";
 
 // Voice concierge: natural-language hotel search + TTS.
@@ -306,6 +308,7 @@ function demoAsk(query, ctx) {
 }
 
 export default function ConciergeView() {
+  const { formatInt } = useCurrency();
   const [messages, setMessages] = useState([]);
   const [results, setResults] = useState([]);
   const [input, setInput] = useState("");
@@ -598,7 +601,11 @@ export default function ConciergeView() {
 
             {messages.map((msg) => (
               <div key={msg.id} className={`cg-bubble cg-bubble--${msg.role}`}>
-                {msg.text}
+                {msg.role === "assistant" ? (
+                  <TypewriterText text={msg.text} onReady={scrollThread} />
+                ) : (
+                  msg.text
+                )}
                 {msg.role === "assistant" && msg.tookMs != null && (
                   <span className="cg-meta">{msg.tookMs} ms</span>
                 )}
@@ -666,7 +673,7 @@ export default function ConciergeView() {
                 <article key={r.id || r.name} className="cg-card">
                   <div className="cg-card-top">
                     <h3 className="cg-card-name">{r.name}</h3>
-                    <span className="cg-price">{formatPrice(r.price)}/nt</span>
+                    <span className="cg-price">{formatInt(r.price)}/nt</span>
                   </div>
                   <div className="cg-card-meta">
                     {r.type && <span>{r.type}</span>}

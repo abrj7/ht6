@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "./map.css";
+import { useCurrency } from "../currency.jsx";
 
 const API_BASE = "http://localhost:4000";
 const POLL_MS = 60_000;
@@ -117,7 +118,8 @@ function esc(s) {
   }[c]));
 }
 
-function popupHtml(p) {
+function popupHtml(p, fmt) {
+  const money = fmt || ((n) => `$${Math.round(n)}`);
   const tags = [];
   if (p.freeCancellation) tags.push('<span class="mv-tag mv-tag-good">FREE CANCEL</span>');
   if (p.instantBook) tags.push('<span class="mv-tag">INSTANT BOOK</span>');
@@ -135,11 +137,12 @@ function popupHtml(p) {
       <div class="mv-popup-meta">${esc(p.type).toUpperCase()} · ★ ${esc(p.rating)} · SLEEPS ${esc(p.capacity)}</div>
       <div class="mv-popup-supplier">best via <b>${esc(p.supplier)}</b> · ${esc(p.spreadPct)}% spread across suppliers</div>
       ${tags.length ? `<div class="mv-popup-tags">${tags.join("")}</div>` : ""}
-      <a class="mv-popup-book" href="${esc(p.bookUrl)}" target="_blank" rel="noopener noreferrer">BOOK NOW · $${esc(p.price)}</a>
+      <a class="mv-popup-book" href="${esc(p.bookUrl)}" target="_blank" rel="noopener noreferrer">BOOK NOW · ${esc(money(p.price))}</a>
     </div>`;
 }
 
 export default function MapView() {
+  const { formatInt } = useCurrency();
   const [filters, setFilters] = useState({
     city: "Toronto, ON",
     type: "",
@@ -248,12 +251,12 @@ export default function MapView() {
       const icon = L.divIcon({
         className: "mv-pill-anchor",
         iconSize: null,
-        html: `<div class="mv-pill mv-pill-${tercile}">$${Math.round(p.price)}${
+        html: `<div class="mv-pill mv-pill-${tercile}">${formatInt(p.price)}${
           p.arb ? '<sup class="mv-pill-arb">ARB</sup>' : ""
         }</div>`,
       });
       const marker = L.marker([p.lat, p.lng], { icon });
-      marker.bindPopup(popupHtml(p), {
+      marker.bindPopup(popupHtml(p, formatInt), {
         className: "mv-leaflet-popup",
         closeButton: true,
         maxWidth: 280,
@@ -271,7 +274,7 @@ export default function MapView() {
       map.setView([data.center.lat, data.center.lng], 12);
       lastFitCityRef.current = cityKey;
     }
-  }, [data]);
+  }, [data, formatInt]);
 
   // --- derived UI values -------------------------------------------------
   const types = data?.filters?.types ?? [];
@@ -281,8 +284,8 @@ export default function MapView() {
 
   const statsLine = useMemo(() => {
     if (!stats || !stats.count) return "no inventory";
-    return `${stats.count} properties · $${stats.minPrice}–$${stats.maxPrice} · avg $${stats.avgPrice} · ${stats.arbCount} ARB`;
-  }, [stats]);
+    return `${stats.count} properties · ${formatInt(stats.minPrice)}–${formatInt(stats.maxPrice)} · avg ${formatInt(stats.avgPrice)} · ${stats.arbCount} ARB`;
+  }, [stats, formatInt]);
 
   const setFilter = (patch) => setFilters((f) => ({ ...f, ...patch }));
 
@@ -332,7 +335,7 @@ export default function MapView() {
         </div>
 
         <div className="mv-field">
-          <span className="mv-microlabel">PRICE / NIGHT</span>
+          <span className="mv-microlabel">PRICE / NIGHT (USD)</span>
           <div className="mv-pricepair">
             <input
               className="mv-num"

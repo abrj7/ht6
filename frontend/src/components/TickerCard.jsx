@@ -1,13 +1,13 @@
 import Sparkline from "./Sparkline.jsx";
 import OrderBook from "./OrderBook.jsx";
+import { useCurrency } from "../currency.jsx";
 
 // One destination = one ticker. In the exchange framing, a price DROP is a
 // win for the traveler, so negative changePct renders teal and positive
 // renders red ("for travelers, down is up").
 
-const money = (n) => `$${Number(n).toFixed(2)}`;
-
 function ChangeChip({ changeAbs, changePct }) {
+  const { format } = useCurrency();
   if (!Number.isFinite(changePct)) return null;
   const dropped = changePct < 0;
   const flat = changePct === 0;
@@ -19,13 +19,14 @@ function ChangeChip({ changeAbs, changePct }) {
       title="For travelers, down is up - a falling price means the trip got cheaper"
     >
       {flat ? "\u25AC" : dropped ? "\u25BC" : "\u25B2"}{" "}
-      {Number.isFinite(changeAbs) ? `$${Math.abs(changeAbs).toFixed(2)} ` : ""}(
+      {Number.isFinite(changeAbs) ? `${format(Math.abs(changeAbs))} ` : ""}(
       {Math.abs(changePct).toFixed(1)}%)
     </span>
   );
 }
 
 export default function TickerCard({ ticker, moverDir, buyingPower, expanded, onToggle }) {
+  const { format: money } = useCurrency();
   const panelId = `book-${ticker.symbol}`;
   const history = Array.isArray(ticker.history) ? ticker.history : [];
   const prices = history.map((p) => Number(p && p.price)).filter(Number.isFinite);

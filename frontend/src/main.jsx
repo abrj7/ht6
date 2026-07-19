@@ -4,6 +4,7 @@ import { Auth0Provider } from "@auth0/auth0-react";
 import App from "./App.jsx";
 import "./index.css";
 import { PROVIDER_DOMAIN, PROVIDER_CLIENT_ID, AUTH0_AUDIENCE } from "./authConfig.js";
+import { CurrencyProvider } from "./currency.jsx";
 
 // Always mount the provider (so useAuth0 never throws), but when Auth0 is
 // unconfigured it gets placeholder domain/clientId that are never exercised —
@@ -17,6 +18,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       redirect_uri: window.location.origin,
     }}
   >
-    <App />
+    <CurrencyProvider>
+      <App />
+    </CurrencyProvider>
   </Auth0Provider>
 );

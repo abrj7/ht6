@@ -1,4 +1,5 @@
 import Sparkline from "./Sparkline.jsx";
+import { useCurrency } from "../currency.jsx";
 
 // Right-column watchlist: one row per exchange ticker. Clicking a row jumps
 // to the Exchange view.
@@ -26,6 +27,7 @@ function SkeletonRow() {
 }
 
 export default function Watchlist({ tickers, onOpenExchange }) {
+  const { format } = useCurrency();
   return (
     <section className="panel watch-panel" aria-label="Watchlist">
       <div className="panel-head">
@@ -67,7 +69,7 @@ export default function Watchlist({ tickers, onOpenExchange }) {
                 )}
               </span>
               <span className="watch-row__last">
-                {Number.isFinite(t.last) ? `$${t.last.toFixed(2)}` : "\u2014"}
+                {Number.isFinite(t.last) ? format(t.last) : "\u2014"}
               </span>
               <span className="watch-row__meta">
                 <ChangeChip changePct={t.changePct} />
