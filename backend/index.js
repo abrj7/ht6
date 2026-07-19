@@ -455,11 +455,29 @@ app.get("/api/opportunity", async (req, res) => {
       Array.isArray(goals) && goals.length
         ? goals.map((g) => {
             const amt = Number(g.amount);
-            const monthly = Number.isFinite(amt) && amt > 0 ? amt : recoverable;
+            const monthlyGoal = Number.isFinite(amt) && amt > 0 ? amt : recoverable;
+            // Match the goal to the user's actual logged spend for that category
+            // so the progress bar tracks real spend and moves the moment they log
+            // more (case-insensitive on the category name). Falls back to the
+            // monthly goal target until any spend is logged.
+            const summaryOk = Array.isArray(spendSummary?.categories);
+            const match = summaryOk
+              ? spendSummary.categories.find(
+                  (c) => (c.name || "").toLowerCase() === (g.category || "").toLowerCase()
+                )
+              : null;
+            const loggedRecoverable = Number.isFinite(match?.recoverableSpend)
+              ? match.recoverableSpend
+              : null;
+            // Chexy up + spend logged -> real accumulated recoverable (grows as
+            // you log). Chexy up + nothing logged yet -> 0 (bar fills from empty).
+            // Chexy down -> show the monthly goal as a baseline.
+            const recoverableSpend =
+              loggedRecoverable != null ? loggedRecoverable : summaryOk ? 0 : monthlyGoal;
             return {
               category: g.category || "Savings",
-              monthlyTotal: monthly,
-              recoverableSpend: monthly,
+              monthlyTotal: match?.monthlyTotal ?? monthlyGoal,
+              recoverableSpend,
               destination: g.destination || null,
             };
           })
