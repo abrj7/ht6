@@ -1,58 +1,368 @@
 [
-  { "category": "food_delivery", "amount": 34.75, "date": "2026-05-02", "merchant": "UberEats" },
-  { "category": "food_delivery", "amount": 28.4, "date": "2026-05-07", "merchant": "DoorDash" },
-  { "category": "food_delivery", "amount": 46.2, "date": "2026-05-14", "merchant": "SkipTheDishes" },
-  { "category": "food_delivery", "amount": 31.1, "date": "2026-05-21", "merchant": "UberEats" },
-  { "category": "food_delivery", "amount": 52.85, "date": "2026-05-29", "merchant": "DoorDash" },
-  { "category": "subscriptions", "amount": 15.99, "date": "2026-05-01", "merchant": "Netflix" },
-  { "category": "subscriptions", "amount": 9.99, "date": "2026-05-01", "merchant": "Spotify" },
-  { "category": "subscriptions", "amount": 19.99, "date": "2026-05-03", "merchant": "Crave" },
-  { "category": "shopping", "amount": 64.3, "date": "2026-05-06", "merchant": "Amazon" },
-  { "category": "shopping", "amount": 89.95, "date": "2026-05-17", "merchant": "Uniqlo" },
-  { "category": "shopping", "amount": 27.5, "date": "2026-05-25", "merchant": "Amazon" },
-  { "category": "gaming", "amount": 39.99, "date": "2026-05-10", "merchant": "Steam" },
-  { "category": "gaming", "amount": 22.59, "date": "2026-05-24", "merchant": "PlayStation" },
-  { "category": "transport", "amount": 40.0, "date": "2026-05-04", "merchant": "Presto" },
-  { "category": "transport", "amount": 18.45, "date": "2026-05-12", "merchant": "Uber" },
-  { "category": "transport", "amount": 23.9, "date": "2026-05-20", "merchant": "Uber" },
-  { "category": "transport", "amount": 20.0, "date": "2026-05-27", "merchant": "Presto" },
-
-  { "category": "food_delivery", "amount": 41.6, "date": "2026-06-01", "merchant": "SkipTheDishes" },
-  { "category": "food_delivery", "amount": 26.95, "date": "2026-06-06", "merchant": "UberEats" },
-  { "category": "food_delivery", "amount": 55.3, "date": "2026-06-13", "merchant": "DoorDash" },
-  { "category": "food_delivery", "amount": 33.2, "date": "2026-06-19", "merchant": "UberEats" },
-  { "category": "food_delivery", "amount": 29.8, "date": "2026-06-24", "merchant": "SkipTheDishes" },
-  { "category": "food_delivery", "amount": 48.15, "date": "2026-06-28", "merchant": "DoorDash" },
-  { "category": "subscriptions", "amount": 15.99, "date": "2026-06-01", "merchant": "Netflix" },
-  { "category": "subscriptions", "amount": 9.99, "date": "2026-06-01", "merchant": "Spotify" },
-  { "category": "subscriptions", "amount": 19.99, "date": "2026-06-03", "merchant": "Crave" },
-  { "category": "shopping", "amount": 112.4, "date": "2026-06-08", "merchant": "Amazon" },
-  { "category": "shopping", "amount": 45.6, "date": "2026-06-15", "merchant": "Uniqlo" },
-  { "category": "shopping", "amount": 38.25, "date": "2026-06-27", "merchant": "Amazon" },
-  { "category": "gaming", "amount": 79.99, "date": "2026-06-11", "merchant": "PlayStation" },
-  { "category": "gaming", "amount": 14.5, "date": "2026-06-22", "merchant": "Steam" },
-  { "category": "transport", "amount": 40.0, "date": "2026-06-02", "merchant": "Presto" },
-  { "category": "transport", "amount": 16.75, "date": "2026-06-10", "merchant": "Uber" },
-  { "category": "transport", "amount": 21.3, "date": "2026-06-18", "merchant": "Uber" },
-  { "category": "transport", "amount": 20.0, "date": "2026-06-25", "merchant": "Presto" },
-  { "category": "transport", "amount": 14.2, "date": "2026-06-29", "merchant": "Uber" },
-
-  { "category": "food_delivery", "amount": 38.0, "date": "2026-07-03", "merchant": "SkipTheDishes" },
-  { "category": "food_delivery", "amount": 42.5, "date": "2026-07-10", "merchant": "UberEats" },
-  { "category": "food_delivery", "amount": 27.35, "date": "2026-07-06", "merchant": "DoorDash" },
-  { "category": "food_delivery", "amount": 51.2, "date": "2026-07-12", "merchant": "UberEats" },
-  { "category": "food_delivery", "amount": 30.45, "date": "2026-07-15", "merchant": "SkipTheDishes" },
-  { "category": "food_delivery", "amount": 44.9, "date": "2026-07-17", "merchant": "DoorDash" },
-  { "category": "subscriptions", "amount": 15.99, "date": "2026-07-01", "merchant": "Netflix" },
-  { "category": "subscriptions", "amount": 9.99, "date": "2026-07-01", "merchant": "Spotify" },
-  { "category": "subscriptions", "amount": 19.99, "date": "2026-07-03", "merchant": "Crave" },
-  { "category": "shopping", "amount": 89.0, "date": "2026-07-05", "merchant": "Amazon" },
-  { "category": "shopping", "amount": 132.75, "date": "2026-07-09", "merchant": "Uniqlo" },
-  { "category": "shopping", "amount": 24.99, "date": "2026-07-14", "merchant": "Amazon" },
-  { "category": "gaming", "amount": 59.99, "date": "2026-07-04", "merchant": "Steam" },
-  { "category": "gaming", "amount": 18.99, "date": "2026-07-13", "merchant": "PlayStation" },
-  { "category": "transport", "amount": 40.0, "date": "2026-07-02", "merchant": "Presto" },
-  { "category": "transport", "amount": 19.6, "date": "2026-07-08", "merchant": "Uber" },
-  { "category": "transport", "amount": 24.85, "date": "2026-07-11", "merchant": "Uber" },
-  { "category": "transport", "amount": 20.0, "date": "2026-07-16", "merchant": "Presto" }
+  {
+    "category": "food_delivery",
+    "amount": 34.75,
+    "date": "2026-05-02",
+    "merchant": "UberEats"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 28.4,
+    "date": "2026-05-07",
+    "merchant": "DoorDash"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 46.2,
+    "date": "2026-05-14",
+    "merchant": "SkipTheDishes"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 31.1,
+    "date": "2026-05-21",
+    "merchant": "UberEats"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 52.85,
+    "date": "2026-05-29",
+    "merchant": "DoorDash"
+  },
+  {
+    "category": "subscriptions",
+    "amount": 15.99,
+    "date": "2026-05-01",
+    "merchant": "Netflix"
+  },
+  {
+    "category": "subscriptions",
+    "amount": 9.99,
+    "date": "2026-05-01",
+    "merchant": "Spotify"
+  },
+  {
+    "category": "subscriptions",
+    "amount": 19.99,
+    "date": "2026-05-03",
+    "merchant": "Crave"
+  },
+  {
+    "category": "shopping",
+    "amount": 64.3,
+    "date": "2026-05-06",
+    "merchant": "Amazon"
+  },
+  {
+    "category": "shopping",
+    "amount": 89.95,
+    "date": "2026-05-17",
+    "merchant": "Uniqlo"
+  },
+  {
+    "category": "shopping",
+    "amount": 27.5,
+    "date": "2026-05-25",
+    "merchant": "Amazon"
+  },
+  {
+    "category": "gaming",
+    "amount": 39.99,
+    "date": "2026-05-10",
+    "merchant": "Steam"
+  },
+  {
+    "category": "gaming",
+    "amount": 22.59,
+    "date": "2026-05-24",
+    "merchant": "PlayStation"
+  },
+  {
+    "category": "transport",
+    "amount": 40,
+    "date": "2026-05-04",
+    "merchant": "Presto"
+  },
+  {
+    "category": "transport",
+    "amount": 18.45,
+    "date": "2026-05-12",
+    "merchant": "Uber"
+  },
+  {
+    "category": "transport",
+    "amount": 23.9,
+    "date": "2026-05-20",
+    "merchant": "Uber"
+  },
+  {
+    "category": "transport",
+    "amount": 20,
+    "date": "2026-05-27",
+    "merchant": "Presto"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 41.6,
+    "date": "2026-06-01",
+    "merchant": "SkipTheDishes"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 26.95,
+    "date": "2026-06-06",
+    "merchant": "UberEats"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 55.3,
+    "date": "2026-06-13",
+    "merchant": "DoorDash"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 33.2,
+    "date": "2026-06-19",
+    "merchant": "UberEats"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 29.8,
+    "date": "2026-06-24",
+    "merchant": "SkipTheDishes"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 48.15,
+    "date": "2026-06-28",
+    "merchant": "DoorDash"
+  },
+  {
+    "category": "subscriptions",
+    "amount": 15.99,
+    "date": "2026-06-01",
+    "merchant": "Netflix"
+  },
+  {
+    "category": "subscriptions",
+    "amount": 9.99,
+    "date": "2026-06-01",
+    "merchant": "Spotify"
+  },
+  {
+    "category": "subscriptions",
+    "amount": 19.99,
+    "date": "2026-06-03",
+    "merchant": "Crave"
+  },
+  {
+    "category": "shopping",
+    "amount": 112.4,
+    "date": "2026-06-08",
+    "merchant": "Amazon"
+  },
+  {
+    "category": "shopping",
+    "amount": 45.6,
+    "date": "2026-06-15",
+    "merchant": "Uniqlo"
+  },
+  {
+    "category": "shopping",
+    "amount": 38.25,
+    "date": "2026-06-27",
+    "merchant": "Amazon"
+  },
+  {
+    "category": "gaming",
+    "amount": 79.99,
+    "date": "2026-06-11",
+    "merchant": "PlayStation"
+  },
+  {
+    "category": "gaming",
+    "amount": 14.5,
+    "date": "2026-06-22",
+    "merchant": "Steam"
+  },
+  {
+    "category": "transport",
+    "amount": 40,
+    "date": "2026-06-02",
+    "merchant": "Presto"
+  },
+  {
+    "category": "transport",
+    "amount": 16.75,
+    "date": "2026-06-10",
+    "merchant": "Uber"
+  },
+  {
+    "category": "transport",
+    "amount": 21.3,
+    "date": "2026-06-18",
+    "merchant": "Uber"
+  },
+  {
+    "category": "transport",
+    "amount": 20,
+    "date": "2026-06-25",
+    "merchant": "Presto"
+  },
+  {
+    "category": "transport",
+    "amount": 14.2,
+    "date": "2026-06-29",
+    "merchant": "Uber"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 38,
+    "date": "2026-07-03",
+    "merchant": "SkipTheDishes"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 42.5,
+    "date": "2026-07-10",
+    "merchant": "UberEats"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 27.35,
+    "date": "2026-07-06",
+    "merchant": "DoorDash"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 51.2,
+    "date": "2026-07-12",
+    "merchant": "UberEats"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 30.45,
+    "date": "2026-07-15",
+    "merchant": "SkipTheDishes"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 44.9,
+    "date": "2026-07-17",
+    "merchant": "DoorDash"
+  },
+  {
+    "category": "subscriptions",
+    "amount": 15.99,
+    "date": "2026-07-01",
+    "merchant": "Netflix"
+  },
+  {
+    "category": "subscriptions",
+    "amount": 9.99,
+    "date": "2026-07-01",
+    "merchant": "Spotify"
+  },
+  {
+    "category": "subscriptions",
+    "amount": 19.99,
+    "date": "2026-07-03",
+    "merchant": "Crave"
+  },
+  {
+    "category": "shopping",
+    "amount": 89,
+    "date": "2026-07-05",
+    "merchant": "Amazon"
+  },
+  {
+    "category": "shopping",
+    "amount": 132.75,
+    "date": "2026-07-09",
+    "merchant": "Uniqlo"
+  },
+  {
+    "category": "shopping",
+    "amount": 24.99,
+    "date": "2026-07-14",
+    "merchant": "Amazon"
+  },
+  {
+    "category": "gaming",
+    "amount": 59.99,
+    "date": "2026-07-04",
+    "merchant": "Steam"
+  },
+  {
+    "category": "gaming",
+    "amount": 18.99,
+    "date": "2026-07-13",
+    "merchant": "PlayStation"
+  },
+  {
+    "category": "transport",
+    "amount": 40,
+    "date": "2026-07-02",
+    "merchant": "Presto"
+  },
+  {
+    "category": "transport",
+    "amount": 19.6,
+    "date": "2026-07-08",
+    "merchant": "Uber"
+  },
+  {
+    "category": "transport",
+    "amount": 24.85,
+    "date": "2026-07-11",
+    "merchant": "Uber"
+  },
+  {
+    "category": "transport",
+    "amount": 20,
+    "date": "2026-07-16",
+    "merchant": "Presto"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 12.34,
+    "date": "2026-07-19",
+    "merchant": "TestCafe",
+    "userId": "demo"
+  },
+  {
+    "category": "subscriptions",
+    "amount": 9.99,
+    "date": "2026-07-19",
+    "merchant": "TestService",
+    "userId": "demo"
+  },
+  {
+    "category": "food_delivery",
+    "amount": 10,
+    "date": "2026-07-19",
+    "merchant": "Uber",
+    "userId": "demo"
+  },
+  {
+    "category": "gaming",
+    "amount": 20,
+    "date": "2026-07-19",
+    "merchant": "Uber",
+    "userId": "demo"
+  },
+  {
+    "category": "gaming",
+    "amount": 2,
+    "date": "2026-07-19",
+    "merchant": "Manual entry",
+    "userId": "demo"
+  },
+  {
+    "category": "gaming",
+    "amount": 22,
+    "date": "2026-07-19",
+    "merchant": "Manual entry",
+    "userId": "demo"
+  }
 ]

@@ -10,11 +10,14 @@ const TITLES = {
   match: "Suite Hearts",
 };
 
-export default function TopBar({ view, buyingPower, lastUpdated }) {
+export default function TopBar({ view, buyingPower, lastUpdated, theme, onToggleTheme }) {
   return (
     <div className="topbar">
       <h1 className="topbar-title">{TITLES[view] || "Yonder"}</h1>
       <div className="topbar-right">
+        <button className="theme-toggle" type="button" onClick={onToggleTheme}>
+          {theme === "light" ? "🌙 Dark" : "☀ Bright"}
+        </button>
         {Number.isFinite(buyingPower) && (
           <span className="power-chip" title="Funded by your cut spending">
             <span className="power-chip__label">Buying power</span>

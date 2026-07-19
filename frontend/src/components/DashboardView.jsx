@@ -1,6 +1,7 @@
 import { useState } from "react";
 import PortfolioStrip from "./PortfolioStrip.jsx";
 import LineChart from "./LineChart.jsx";
+import SpendInputForm from "./SpendInputForm.jsx";
 import Watchlist from "./Watchlist.jsx";
 import RouteRow from "./RouteRow.jsx";
 
@@ -120,7 +121,7 @@ function GreenCard({ route }) {
   );
 }
 
-export default function DashboardView({ routes, coachMessage, tickers, onOpenExchange }) {
+export default function DashboardView({ routes, coachMessage, tickers, onOpenExchange, onSpendUpdated }) {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [expandedCategory, setExpandedCategory] = useState(null);
 
@@ -174,6 +175,8 @@ export default function DashboardView({ routes, coachMessage, tickers, onOpenExc
 
         <div className="dashboard-right">
           <Watchlist tickers={tickers} onOpenExchange={onOpenExchange} />
+
+          <SpendInputForm onSpendUpdated={onSpendUpdated} />
 
           <section className="coach-card" aria-label="Coach">
             <div className="coach-label">Coach</div>

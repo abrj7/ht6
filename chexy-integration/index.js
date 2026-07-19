@@ -1,10 +1,11 @@
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 
 const app = express();
 app.use(cors());
+app.use(express.json());
 
 // Person D owns this file and everything in /chexy-integration.
 // Exposes GET /spend-summary - see docs/PRD.md section 12 for the contract.
@@ -77,6 +78,42 @@ app.get("/spend-summary", (req, res) => {
     categories,
     summary: { totalMonthly, totalRecoverable, month: CURRENT_MONTH },
   });
+});
+
+app.post("/transactions", (req, res) => {
+  const transaction = req.body;
+  if (!transaction || typeof transaction !== "object") {
+    return res.status(400).json({ error: "invalid request body" });
+  }
+
+  const { userId, category, amount, merchant, date } = transaction;
+  if (!category || typeof category !== "string") {
+    return res.status(400).json({ error: "category required" });
+  }
+  const spendAmount = Number(amount);
+  if (!Number.isFinite(spendAmount) || spendAmount <= 0) {
+    return res.status(400).json({ error: "amount must be a positive number" });
+  }
+  const transactionDate = typeof date === "string" && new Date(date).toString() !== "Invalid Date"
+    ? date.slice(0, 10)
+    : new Date().toISOString().slice(0, 10);
+
+  const transactions = JSON.parse(
+    readFileSync(new URL("./data/mockTransactions.json", import.meta.url))
+  );
+  transactions.push({
+    category: category.trim(),
+    amount: Math.round(spendAmount * 100) / 100,
+    date: transactionDate,
+    merchant: merchant ? String(merchant).trim() : "Manual entry",
+    userId: userId || "demo",
+  });
+  writeFileSync(
+    new URL("./data/mockTransactions.json", import.meta.url),
+    JSON.stringify(transactions, null, 2)
+  );
+
+  res.status(201).json({ status: "ok", transactionCount: transactions.length });
 });
 
 app.get("/health", (req, res) => {

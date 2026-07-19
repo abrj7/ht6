@@ -259,7 +259,7 @@ export function normalizeMarket(data) {
 // Poll GET /api/opportunity while `active`. Keeps the last payload when the
 // view unmounts the poll, falls back to DEMO_ROUTES if the backend is down.
 // routes === null means "first fetch still in flight" (render skeletons).
-export function useOpportunity(active) {
+export function useOpportunity(active, refreshKey) {
   const [state, setState] = useState({
     routes: null,
     coachMessage: DEMO_COACH,
@@ -305,14 +305,14 @@ export function useOpportunity(active) {
       cancelled = true;
       clearInterval(timer);
     };
-  }, [active]);
+  }, [active, refreshKey]);
 
   return state;
 }
 
 // Poll GET /api/market while `active`. market === null means "first fetch
 // still in flight"; on failure the demo market keeps the terminal alive.
-export function useMarket(active) {
+export function useMarket(active, refreshKey) {
   const [state, setState] = useState({ market: null, live: false, lastUpdated: null });
 
   useEffect(() => {
@@ -342,7 +342,7 @@ export function useMarket(active) {
       cancelled = true;
       clearInterval(timer);
     };
-  }, [active]);
+  }, [active, refreshKey]);
 
   return state;
 }

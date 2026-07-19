@@ -26,6 +26,21 @@
   color-scheme: light;
 }
 
+:root[data-theme="dark"] {
+  --board: #0f1419;
+  --panel: #171d24;
+  --panel-line: #2a3240;
+  --flap-amber: #f2b24b;
+  --chalk: #f5efe5;
+  --chalk-dim: #93a0ae;
+  --route-teal: #57c7c1;
+  --stamp-red: #ff6b5f;
+  --flap-bg: #0b0e12;
+  --flap-glow: #ffcc73;
+  --flap-text: #f8f4eb;
+  color-scheme: dark;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -183,6 +198,10 @@ body {
   z-index: 10;
 }
 
+:root[data-theme="dark"] .topbar {
+  background: rgba(15, 20, 25, 0.94);
+}
+
 .topbar-title {
   font-family: var(--font-mono);
   font-size: 0.82rem;
@@ -197,6 +216,25 @@ body {
   display: flex;
   align-items: center;
   gap: 1.1rem;
+}
+
+.theme-toggle {
+  border: 1px solid var(--panel-line);
+  background: var(--panel);
+  color: var(--chalk);
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.63rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-1px);
+  border-color: var(--flap-amber);
 }
 
 .power-chip {
@@ -246,6 +284,80 @@ body {
   background: var(--panel);
   border: 1px solid var(--panel-line);
   border-radius: var(--radius);
+}
+
+.spend-panel {
+  padding: 0;
+}
+
+.spend-form {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem 1.4rem 1rem;
+}
+
+.spend-field {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.spend-field span {
+  color: var(--chalk-dim);
+}
+
+.spend-field select,
+.spend-field input {
+  width: 100%;
+  border: 1px solid var(--panel-line);
+  border-radius: 0.75rem;
+  background: var(--panel);
+  color: inherit;
+  font: inherit;
+  padding: 0.9rem 1rem;
+}
+
+.spend-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.button {
+  border: none;
+  border-radius: 999px;
+  padding: 0.95rem 1.2rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.button--primary {
+  background: var(--flap-amber);
+  color: var(--board);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spend-note {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--chalk-dim);
+}
+
+.spend-status {
+  margin: 0 1.4rem 1.2rem;
+  font-size: 0.85rem;
+}
+
+.spend-status--success {
+  color: var(--route-teal);
+}
+
+.spend-status--error {
+  color: var(--stamp-red);
 }
 
 .panel-head {

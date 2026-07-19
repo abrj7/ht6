@@ -15,6 +15,7 @@ import ragRouter from "./routes/rag.js";
 import voiceRouter from "./routes/voice.js";
 import nowcastRouter from "./routes/nowcast.js";
 import matchRouter from "./routes/match.js";
+import { insertTransaction, getDb } from "./mongoClient.js";
 
 const app = express();
 app.use(cors());
@@ -383,6 +384,87 @@ app.get("/api/opportunity", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(502).json({ error: "upstream failure", detail: String(err.message ?? err) });
+  }
+});
+
+app.post("/api/spend", async (req, res) => {
+  const { category, amount, merchant, date, userId } = req.body ?? {};
+  if (!category || typeof category !== "string") {
+    return res.status(400).json({ error: "category required" });
+  }
+  const spendAmount = Number(amount);
+  if (!Number.isFinite(spendAmount) || spendAmount <= 0) {
+    return res.status(400).json({ error: "amount must be a positive number" });
+  }
+
+  const transactionDate = (() => {
+    const parsed = new Date(date);
+    return Number.isNaN(parsed.getTime())
+      ? new Date().toISOString().slice(0, 10)
+      : parsed.toISOString().slice(0, 10);
+  })();
+
+  const payload = {
+    userId: userId || "demo",
+    category: category.trim(),
+    amount: Math.round(spendAmount * 100) / 100,
+    merchant: merchant ? String(merchant).trim() : "Manual entry",
+    date: transactionDate,
+  };
+
+  try {
+    // If a MongoDB URI is configured, persist transactions locally in Mongo.
+    if (process.env.MONGODB_URI) {
+      try {
+        const r = await insertTransaction(payload);
+        return res.status(201).json({ status: "ok", insertedId: r.insertedId });
+      } catch (e) {
+        console.error("mongo insert failed", e);
+        // fall through to attempt chexy write as a fallback
+      }
+    }
+
+    const chexyRes = await fetch(`${CHEXY_SERVICE_URL}/transactions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!chexyRes.ok) {
+      const detail = await chexyRes.text().catch(() => "");
+      throw new Error(`chexy-integration ${chexyRes.status} ${detail}`);
+    }
+    const data = await chexyRes.json();
+    res.status(201).json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(502).json({ error: "chexy write failed", detail: String(err.message ?? err) });
+  }
+});
+
+// GET /api/spend - return stored transactions (Mongo) or fallback to Chexy summary
+app.get("/api/spend", async (req, res) => {
+  const userId = req.query.userId || "demo";
+  try {
+    if (process.env.MONGODB_URI) {
+      const db = await getDb();
+      if (!db) throw new Error("mongo not available");
+      const docs = await db
+        .collection("transactions")
+        .find({ userId })
+        .sort({ date: -1 })
+        .limit(200)
+        .toArray();
+      return res.json({ mode: "mongo", userId, transactions: docs });
+    }
+
+    // Fallback: ask Chexy for the categorized spend summary
+    const r = await fetch(`${CHEXY_SERVICE_URL}/spend-summary?userId=${encodeURIComponent(userId)}`);
+    if (!r.ok) throw new Error(`chexy ${r.status}`);
+    const data = await r.json();
+    return res.json({ mode: "chexy", userId, summary: data });
+  } catch (err) {
+    console.error(err);
+    res.status(502).json({ error: "spend fetch failed", detail: String(err.message ?? err) });
   }
 });
 
