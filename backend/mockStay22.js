@@ -22,6 +22,7 @@ const CATALOG = {
       rating: 8.4,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: true },
+      amenities: ["wifi", "parking", "restaurant", "gym", "breakfast", "ski access"],
       suppliers: { booking: quote(214), expedia: quote(226), hotelscom: quote(239) },
     },
     {
@@ -32,6 +33,7 @@ const CATALOG = {
       rating: 9.1,
       capacity: 4,
       policies: { instantBook: false, freeCancellation: true },
+      amenities: ["wifi", "parking", "fireplace", "hot tub", "kitchen", "mountain view"],
       suppliers: { vrbo: quote(296), booking: quote(327), expedia: quote(344) },
     },
     {
@@ -42,6 +44,7 @@ const CATALOG = {
       rating: 8.2,
       capacity: 1,
       policies: { instantBook: true, freeCancellation: false },
+      amenities: ["wifi", "kitchen", "laundry", "common room"],
       suppliers: { hotelscom: quote(88), expedia: quote(91), booking: quote(94) },
     },
   ],
@@ -54,6 +57,7 @@ const CATALOG = {
       rating: 8.0,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: false },
+      amenities: ["wifi", "restaurant", "bar", "air conditioning"],
       suppliers: { expedia: quote(96), booking: quote(101), hotelscom: quote(108) },
     },
     {
@@ -64,6 +68,7 @@ const CATALOG = {
       rating: 8.7,
       capacity: 1,
       policies: { instantBook: true, freeCancellation: true },
+      amenities: ["wifi", "kitchen", "laundry", "breakfast"],
       suppliers: { hotelscom: quote(54), booking: quote(59) },
     },
     {
@@ -74,6 +79,7 @@ const CATALOG = {
       rating: 9.0,
       capacity: 5,
       policies: { instantBook: false, freeCancellation: true },
+      amenities: ["wifi", "kitchen", "parking", "pet friendly", "balcony"],
       suppliers: { vrbo: quote(242), expedia: quote(261), booking: quote(275) },
     },
   ],
@@ -86,6 +92,7 @@ const CATALOG = {
       rating: 9.3,
       capacity: 6,
       policies: { instantBook: false, freeCancellation: true },
+      amenities: ["wifi", "kitchen", "beach access", "hot tub", "fireplace", "parking"],
       // ~25% outlier spread on purpose: vrbo lists at 338 while expedia asks
       // 424 for the same villa - textbook arbitrage flag for the exchange.
       suppliers: { vrbo: quote(338), booking: quote(371), expedia: quote(424) },
@@ -98,6 +105,7 @@ const CATALOG = {
       rating: 8.5,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: true },
+      amenities: ["wifi", "kitchen", "laundry", "surf storage"],
       suppliers: { hotelscom: quote(76), booking: quote(82) },
     },
     {
@@ -108,6 +116,7 @@ const CATALOG = {
       rating: 8.6,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: false },
+      amenities: ["wifi", "restaurant", "spa", "parking", "beach access"],
       suppliers: { booking: quote(189), expedia: quote(197), hotelscom: quote(214), vrbo: quote(221) },
     },
   ],
@@ -120,6 +129,7 @@ const CATALOG = {
       rating: 8.8,
       capacity: 4,
       policies: { instantBook: true, freeCancellation: true },
+      amenities: ["wifi", "kitchen", "fireplace", "lake view", "parking", "pet friendly"],
       suppliers: { booking: quote(178), vrbo: quote(186), expedia: quote(203) },
     },
     {
@@ -130,6 +140,7 @@ const CATALOG = {
       rating: 8.1,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: false },
+      amenities: ["wifi", "restaurant", "parking", "lake view"],
       suppliers: { expedia: quote(132), hotelscom: quote(137), booking: quote(146) },
     },
   ],
@@ -142,6 +153,7 @@ const CATALOG = {
       rating: 8.3,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: true },
+      amenities: ["wifi", "parking", "restaurant", "pool", "ski access", "gym"],
       suppliers: { booking: quote(158), expedia: quote(164), hotelscom: quote(176) },
     },
     {
@@ -152,6 +164,7 @@ const CATALOG = {
       rating: 8.9,
       capacity: 6,
       policies: { instantBook: false, freeCancellation: true },
+      amenities: ["wifi", "fireplace", "hot tub", "ski access", "kitchen", "parking"],
       // Second deliberate outlier (~24%) so more than one arb can fire.
       suppliers: { vrbo: quote(224), booking: quote(278) },
     },
@@ -165,6 +178,7 @@ const CATALOG = {
       rating: 8.6,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: true },
+      amenities: ["wifi", "restaurant", "bar", "parking", "spa"],
       suppliers: { expedia: quote(168), booking: quote(174), hotelscom: quote(185), vrbo: quote(196) },
     },
     {
@@ -175,6 +189,7 @@ const CATALOG = {
       rating: 9.2,
       capacity: 4,
       policies: { instantBook: false, freeCancellation: true },
+      amenities: ["wifi", "kitchen", "parking", "fireplace", "garden", "pet friendly"],
       suppliers: { vrbo: quote(289), expedia: quote(312), booking: quote(334) },
     },
   ],
@@ -189,6 +204,7 @@ const CATALOG = {
       rating: 8.9,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: true },
+      amenities: ["wifi", "gym", "restaurant", "concierge", "room service", "parking"],
       suppliers: { booking: quote(312), expedia: quote(328), hotelscom: quote(341), vrbo: quote(336) },
     },
     {
@@ -199,6 +215,7 @@ const CATALOG = {
       rating: 8.3,
       capacity: 3,
       policies: { instantBook: true, freeCancellation: false },
+      amenities: ["wifi", "restaurant", "lake view", "fitness center"],
       suppliers: { expedia: quote(246), booking: quote(255), hotelscom: quote(268) },
     },
     {
@@ -209,6 +226,7 @@ const CATALOG = {
       rating: 8.6,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: true },
+      amenities: ["wifi", "bar", "breakfast", "air conditioning"],
       suppliers: { booking: quote(228), hotelscom: quote(236), expedia: quote(249) },
     },
     {
@@ -219,6 +237,7 @@ const CATALOG = {
       rating: 7.8,
       capacity: 1,
       policies: { instantBook: true, freeCancellation: false },
+      amenities: ["wifi", "kitchen", "laundry", "common room"],
       suppliers: { hotelscom: quote(74), booking: quote(79), expedia: quote(81) },
     },
     {
@@ -229,6 +248,7 @@ const CATALOG = {
       rating: 8.4,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: true },
+      amenities: ["wifi", "restaurant", "bar", "art gallery"],
       suppliers: { expedia: quote(198), booking: quote(207), vrbo: quote(219) },
     },
     {
@@ -239,6 +259,7 @@ const CATALOG = {
       rating: 8.9,
       capacity: 4,
       policies: { instantBook: false, freeCancellation: true },
+      amenities: ["wifi", "kitchen", "washer dryer", "balcony", "pet friendly"],
       // Deliberate ~26% spread — a downtown arb candidate for the map layer.
       suppliers: { vrbo: quote(176), booking: quote(199), expedia: quote(221) },
     },
@@ -250,6 +271,7 @@ const CATALOG = {
       rating: 9.4,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: true },
+      amenities: ["wifi", "spa", "restaurant", "concierge", "valet parking", "gym"],
       suppliers: { booking: quote(438), expedia: quote(449), hotelscom: quote(462) },
     },
     {
@@ -260,6 +282,7 @@ const CATALOG = {
       rating: 8.7,
       capacity: 4,
       policies: { instantBook: false, freeCancellation: true },
+      amenities: ["wifi", "kitchen", "parking", "gym access"],
       suppliers: { vrbo: quote(265), booking: quote(281), expedia: quote(288) },
     },
     {
@@ -270,6 +293,7 @@ const CATALOG = {
       rating: 8.5,
       capacity: 3,
       policies: { instantBook: true, freeCancellation: true },
+      amenities: ["wifi", "breakfast", "garden", "kitchenette"],
       suppliers: { vrbo: quote(142), booking: quote(151) },
     },
     {
@@ -280,6 +304,7 @@ const CATALOG = {
       rating: 7.5,
       capacity: 1,
       policies: { instantBook: true, freeCancellation: false },
+      amenities: ["wifi", "kitchen", "laundry"],
       suppliers: { booking: quote(71), hotelscom: quote(75) },
     },
     {
@@ -290,6 +315,7 @@ const CATALOG = {
       rating: 9.0,
       capacity: 5,
       policies: { instantBook: false, freeCancellation: true },
+      amenities: ["wifi", "kitchen", "parking", "exposed brick", "pet friendly"],
       // Second wide spread (~25%) so more than one Toronto arb pin can fire.
       suppliers: { vrbo: quote(232), hotelscom: quote(262), expedia: quote(289) },
     },
@@ -301,6 +327,7 @@ const CATALOG = {
       rating: 8.2,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: true },
+      amenities: ["wifi", "restaurant", "breakfast"],
       suppliers: { hotelscom: quote(184), booking: quote(191), expedia: quote(198) },
     },
     {
@@ -311,6 +338,7 @@ const CATALOG = {
       rating: 8.8,
       capacity: 4,
       policies: { instantBook: false, freeCancellation: true },
+      amenities: ["wifi", "kitchen", "parking", "patio", "pet friendly"],
       suppliers: { vrbo: quote(158), booking: quote(171) },
     },
     {
@@ -321,6 +349,7 @@ const CATALOG = {
       rating: 7.2,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: false },
+      amenities: ["wifi", "parking"],
       suppliers: { expedia: quote(109), hotelscom: quote(114), booking: quote(118) },
     },
     {
@@ -331,6 +360,7 @@ const CATALOG = {
       rating: 8.6,
       capacity: 4,
       policies: { instantBook: true, freeCancellation: true },
+      amenities: ["wifi", "kitchen", "gym", "pool", "parking", "balcony"],
       suppliers: { vrbo: quote(203), expedia: quote(214), booking: quote(222) },
     },
     {
@@ -341,6 +371,7 @@ const CATALOG = {
       rating: 8.1,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: true },
+      amenities: ["wifi", "kitchen", "laundry", "common room", "breakfast"],
       suppliers: { booking: quote(82), hotelscom: quote(86), expedia: quote(93) },
     },
     {
@@ -351,6 +382,7 @@ const CATALOG = {
       rating: 7.6,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: true },
+      amenities: ["wifi", "shuttle", "restaurant", "parking", "air conditioning"],
       suppliers: { expedia: quote(139), booking: quote(146), hotelscom: quote(152) },
     },
     {
@@ -361,6 +393,7 @@ const CATALOG = {
       rating: 7.3,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: false },
+      amenities: ["wifi", "parking", "shuttle"],
       suppliers: { hotelscom: quote(98), booking: quote(104), expedia: quote(111) },
     },
   ],
@@ -414,6 +447,13 @@ export function resolveCity(input) {
     if (key.toLowerCase() === wanted || cityOnly === wanted) return key;
   }
   return null;
+}
+
+/** Flat catalog for RAG corpus indexing (stable mock prices, no jitter). */
+export function listAllProperties() {
+  return Object.entries(CATALOG).flatMap(([city, props]) =>
+    props.map((property) => ({ property, city }))
+  );
 }
 
 export function mockSearchAccommodations({ address, type }) {
