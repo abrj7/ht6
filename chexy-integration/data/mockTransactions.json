@@ -406,5 +406,110 @@
     "date": "2026-07-19",
     "merchant": "Test",
     "userId": "demo"
+  },
+  {
+    "category": "Coffee",
+    "amount": 5,
+    "date": "2026-07-19",
+    "merchant": "Manual entry",
+    "userId": "google-oauth2|100034305499144080661"
+  },
+  {
+    "category": "Lunch",
+    "amount": 40,
+    "date": "2026-07-19",
+    "merchant": "Manual entry",
+    "userId": "google-oauth2|100034305499144080661"
+  },
+  {
+    "category": "Coffee",
+    "amount": 18,
+    "date": "2026-07-19",
+    "merchant": "Cafe",
+    "userId": "demo"
+  },
+  {
+    "category": "Coffee",
+    "amount": 50,
+    "date": "2026-07-19",
+    "merchant": "Manual entry",
+    "userId": "google-oauth2|100034305499144080661"
+  },
+  {
+    "category": "Rideshare",
+    "amount": 10,
+    "date": "2026-07-19",
+    "merchant": "Netflix",
+    "userId": "google-oauth2|100034305499144080661"
+  },
+  {
+    "category": "Lunch",
+    "amount": 50,
+    "date": "2026-07-19",
+    "merchant": "UberEats",
+    "userId": "google-oauth2|100034305499144080661"
+  },
+  {
+    "category": "Coffee",
+    "amount": 20,
+    "date": "2026-07-19",
+    "merchant": "HEllo",
+    "userId": "google-oauth2|100034305499144080661"
+  },
+  {
+    "category": "Coffee",
+    "amount": 3,
+    "date": "2026-07-19",
+    "merchant": "t",
+    "userId": "demo"
+  },
+  {
+    "category": "Rideshare",
+    "amount": 2,
+    "date": "2026-07-19",
+    "merchant": "Manual entry",
+    "userId": "google-oauth2|100034305499144080661"
+  },
+  {
+    "category": "Coffee",
+    "amount": 3,
+    "date": "2026-07-19",
+    "merchant": "t",
+    "userId": "demo"
+  },
+  {
+    "category": "Coffee",
+    "amount": 2,
+    "date": "2026-07-19",
+    "merchant": "t",
+    "userId": "demo"
+  },
+  {
+    "category": "Coffee",
+    "amount": 2,
+    "date": "2026-07-19",
+    "merchant": "t",
+    "userId": "demo"
+  },
+  {
+    "category": "Coffee",
+    "amount": 2,
+    "date": "2026-07-19",
+    "merchant": "t",
+    "userId": "demo"
+  },
+  {
+    "category": "Lunch",
+    "amount": 20,
+    "date": "2026-07-19",
+    "merchant": "McDonalds",
+    "userId": "google-oauth2|100034305499144080661"
+  },
+  {
+    "category": "Save on Dinners",
+    "amount": 30,
+    "date": "2026-07-19",
+    "merchant": "No Nobu",
+    "userId": "google-oauth2|100034305499144080661"
   }
 ]
