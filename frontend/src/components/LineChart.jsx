@@ -18,7 +18,7 @@ export default function LineChart({ history, id = "chart" }) {
     .filter((p) => Number.isFinite(p.price));
 
   if (points.length < 2) {
-    return <div className="linechart-empty micro-label">waiting for price history\u2026</div>;
+    return <div className="linechart-empty micro-label">waiting for price history…</div>;
   }
 
   const prices = points.map((p) => p.price);

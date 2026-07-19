@@ -78,8 +78,11 @@ function seedBackdatedHistory(currentPrice) {
 function recordPrice(destination, price) {
   if (typeof price !== "number") return;
   let hist = priceHistory.get(destination);
-  if (!hist) {
-    hist = USE_REAL_STAY22 ? [] : seedBackdatedHistory(price);
+  if (!hist || hist.length < 2) {
+    // Seed a short walk ending at the first observed price so charts render
+    // immediately — in live mode the newest point is still the real Stay22 quote;
+    // subsequent 10-min polls append genuine history after that.
+    hist = seedBackdatedHistory(price);
     priceHistory.set(destination, hist);
   }
   // Near-simultaneous fetches (different cache keys) update the same point
