@@ -116,6 +116,33 @@ GET /api/opportunity?category=food_delivery&amount=150&type=optional(hotel|cabin
 }
 ```
 
+```
+GET /api/market   — the exchange feed (Stay22 track headline: destinations as tickers)
+→ {
+  asOf: ISOtimestamp,
+  mode: "live"|"mock",
+  buyingPower: number,           // chexy summary.totalRecoverable, 0 if chexy is down
+  tickers: [{
+    symbol,                      // e.g. "YBNF" for Banff — stable short code per destination
+    destination,                 // "Banff, AB"
+    last,                        // cheapest nightly total across all properties + suppliers
+    changeAbs, changePct,        // vs previous history point (null if no prior point)
+    history: [{ t, price }],     // oldest→newest, same per-destination series as /api/opportunity
+    dayRange: { low, high },     // min/max of history
+    book: [{ supplier, price }], // order book: best quote per supplier for the cheapest property, ascending
+    spread: { bestSupplier, bestPrice, worstSupplier, worstPrice, spreadAbs, spreadPct },  // null if <2 suppliers
+    arb: boolean,                // true when spreadPct >= 15 (arbitrage flag)
+    affordable: boolean,         // buyingPower >= last
+    property: { name, type, rating },  // the property behind the quote
+    buyUrl                       // Stay22 affiliate booking link
+  }],
+  movers: { up: symbol|null, down: symbol|null },  // biggest changePct each way
+  tape: [string]                 // 5-8 ticker-tape lines generated from live quote data
+}
+Ticker symbols: YBNF (Banff), YMTL (Montreal), YTOF (Tofino), YPEC (Prince Edward County),
+YBLU (Blue Mountain), YNTL (Niagara-on-the-Lake).
+```
+
 **AI-service exposes to Backend:**
 ```
 POST /coach
@@ -133,8 +160,15 @@ Everyone builds against these contracts with mock data FIRST, integrates for rea
 
 ## 13. Demo script (3 min)
 1. Show categorized spend (Chexy sandbox data) — "here's $150/month in food delivery"
-2. Show live opportunity cost — real Stay22-priced options, right now
+2. Show live opportunity cost on the departure board — real Stay22-priced options, right now
 3. Show FreeSolo coaching message — personalized, not generic
-4. Show price move live (or simulated) — goal progress updates
-5. Click book-now → Stay22 affiliate link
-6. Close on the "why fine-tuning" and "why this isn't a normal budgeting app" points from section 4
+4. **Flip to the Exchange** — "and here's the unhinged part: this is a stock market built on hotel inventory." Tickers, live charts from our self-built price series, supplier bid/ask spreads, an ARB alert firing
+5. Point at buying power — "the deposits are funded by the spending you cut"
+6. Click BUY → Stay22 affiliate link — "every market order pays commission; the demo *is* the business model"
+7. Close on the "why fine-tuning" and "why this isn't a normal budgeting app" points from section 4
+
+### Stay22 track one-liner
+Hotel inventory as a securities exchange: destinations are tickers, suppliers
+are market makers, your bad habits fund the deposits, and every order pays
+Stay22 commission. Snapshot-only API? We built our own market data by polling
+the 10-min cache and storing the series ourselves.

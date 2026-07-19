@@ -2,6 +2,15 @@
 // (results[].suppliers.*.price.total, location, rating, capacity, policies, type).
 // Used automatically when STAY22_API_KEY is blank so everyone can build
 // against the contract before Person B wires the real key in.
+//
+// Exchange mechanic: every property carries 2-4 suppliers (booking / vrbo /
+// expedia / hotelscom) quoting DIFFERENT prices for the same property, giving
+// /api/market a real bid/ask spread. Spreads are hand-tuned 3-20% with a
+// couple of ~25% outliers for arbitrage flags; per-poll jitter moves them.
+
+function quote(total) {
+  return { price: { total, currency: "CAD" } };
+}
 
 const CATALOG = {
   "Banff, AB": [
@@ -13,7 +22,7 @@ const CATALOG = {
       rating: 8.4,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: true },
-      suppliers: { booking: { price: { total: 214, currency: "CAD" } } },
+      suppliers: { booking: quote(214), expedia: quote(226), hotelscom: quote(239) },
     },
     {
       id: "mock-banff-2",
@@ -23,7 +32,7 @@ const CATALOG = {
       rating: 9.1,
       capacity: 4,
       policies: { instantBook: false, freeCancellation: true },
-      suppliers: { vrbo: { price: { total: 296, currency: "CAD" } } },
+      suppliers: { vrbo: quote(296), booking: quote(327), expedia: quote(344) },
     },
     {
       id: "mock-banff-3",
@@ -33,7 +42,7 @@ const CATALOG = {
       rating: 8.2,
       capacity: 1,
       policies: { instantBook: true, freeCancellation: false },
-      suppliers: { hostelworld: { price: { total: 88, currency: "CAD" } } },
+      suppliers: { hotelscom: quote(88), expedia: quote(91), booking: quote(94) },
     },
   ],
   "Montreal, QC": [
@@ -45,7 +54,7 @@ const CATALOG = {
       rating: 8.0,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: false },
-      suppliers: { expedia: { price: { total: 96, currency: "CAD" } } },
+      suppliers: { expedia: quote(96), booking: quote(101), hotelscom: quote(108) },
     },
     {
       id: "mock-mtl-2",
@@ -55,7 +64,7 @@ const CATALOG = {
       rating: 8.7,
       capacity: 1,
       policies: { instantBook: true, freeCancellation: true },
-      suppliers: { hotelscom: { price: { total: 54, currency: "CAD" } } },
+      suppliers: { hotelscom: quote(54), booking: quote(59) },
     },
     {
       id: "mock-mtl-3",
@@ -65,7 +74,7 @@ const CATALOG = {
       rating: 9.0,
       capacity: 5,
       policies: { instantBook: false, freeCancellation: true },
-      suppliers: { vrbo: { price: { total: 242, currency: "CAD" } } },
+      suppliers: { vrbo: quote(242), expedia: quote(261), booking: quote(275) },
     },
   ],
   "Tofino, BC": [
@@ -77,7 +86,9 @@ const CATALOG = {
       rating: 9.3,
       capacity: 6,
       policies: { instantBook: false, freeCancellation: true },
-      suppliers: { vrbo: { price: { total: 338, currency: "CAD" } } },
+      // ~25% outlier spread on purpose: vrbo lists at 338 while expedia asks
+      // 424 for the same villa - textbook arbitrage flag for the exchange.
+      suppliers: { vrbo: quote(338), booking: quote(371), expedia: quote(424) },
     },
     {
       id: "mock-tofino-2",
@@ -87,7 +98,7 @@ const CATALOG = {
       rating: 8.5,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: true },
-      suppliers: { hostelworld: { price: { total: 76, currency: "CAD" } } },
+      suppliers: { hotelscom: quote(76), booking: quote(82) },
     },
     {
       id: "mock-tofino-3",
@@ -97,7 +108,7 @@ const CATALOG = {
       rating: 8.6,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: false },
-      suppliers: { booking: { price: { total: 189, currency: "CAD" } } },
+      suppliers: { booking: quote(189), expedia: quote(197), hotelscom: quote(214), vrbo: quote(221) },
     },
   ],
   "Prince Edward County, ON": [
@@ -109,7 +120,7 @@ const CATALOG = {
       rating: 8.8,
       capacity: 4,
       policies: { instantBook: true, freeCancellation: true },
-      suppliers: { booking: { price: { total: 178, currency: "CAD" } } },
+      suppliers: { booking: quote(178), vrbo: quote(186), expedia: quote(203) },
     },
     {
       id: "mock-pec-2",
@@ -119,7 +130,7 @@ const CATALOG = {
       rating: 8.1,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: false },
-      suppliers: { expedia: { price: { total: 132, currency: "CAD" } } },
+      suppliers: { expedia: quote(132), hotelscom: quote(137), booking: quote(146) },
     },
   ],
   "Blue Mountain, ON": [
@@ -131,7 +142,7 @@ const CATALOG = {
       rating: 8.3,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: true },
-      suppliers: { booking: { price: { total: 158, currency: "CAD" } } },
+      suppliers: { booking: quote(158), expedia: quote(164), hotelscom: quote(176) },
     },
     {
       id: "mock-blue-2",
@@ -141,7 +152,8 @@ const CATALOG = {
       rating: 8.9,
       capacity: 6,
       policies: { instantBook: false, freeCancellation: true },
-      suppliers: { vrbo: { price: { total: 224, currency: "CAD" } } },
+      // Second deliberate outlier (~24%) so more than one arb can fire.
+      suppliers: { vrbo: quote(224), booking: quote(278) },
     },
   ],
   "Niagara-on-the-Lake, ON": [
@@ -153,7 +165,7 @@ const CATALOG = {
       rating: 8.6,
       capacity: 2,
       policies: { instantBook: true, freeCancellation: true },
-      suppliers: { expedia: { price: { total: 168, currency: "CAD" } } },
+      suppliers: { expedia: quote(168), booking: quote(174), hotelscom: quote(185), vrbo: quote(196) },
     },
     {
       id: "mock-notl-2",
@@ -163,10 +175,13 @@ const CATALOG = {
       rating: 9.2,
       capacity: 4,
       policies: { instantBook: false, freeCancellation: true },
-      suppliers: { vrbo: { price: { total: 289, currency: "CAD" } } },
+      suppliers: { vrbo: quote(289), expedia: quote(312), booking: quote(334) },
     },
   ],
 };
+
+// Every destination on the exchange (drives /api/market ticker coverage).
+export const CATALOG_DESTINATIONS = Object.keys(CATALOG);
 
 // Category -> destination pairing for the demo. Swap for real user prefs later.
 export const CATEGORY_DESTINATIONS = {
@@ -192,17 +207,17 @@ export function mockSearchAccommodations({ address, type }) {
   // list if the filter would return nothing (keeps the demo alive).
   const filtered = type ? all.filter((r) => r.type === type) : all;
   const results = filtered.length ? filtered : all;
-  // Tiny deterministic-ish jitter so repeated polls show "live" movement in demos.
+  // Per-supplier jitter so repeated polls show "live" movement AND the
+  // bid/ask spread itself shifts between refreshes (each market maker
+  // reprices independently).
   const jittered = results.map((r) => {
-    const supplierKey = Object.keys(r.suppliers)[0];
-    const base = r.suppliers[supplierKey].price.total;
-    const jitter = Math.round((Math.random() - 0.5) * 8);
-    return {
-      ...r,
-      suppliers: {
-        [supplierKey]: { price: { total: base + jitter, currency: "CAD" } },
-      },
-    };
+    const suppliers = Object.fromEntries(
+      Object.entries(r.suppliers).map(([name, s]) => {
+        const jitter = Math.round((Math.random() - 0.5) * 8);
+        return [name, { price: { total: Math.max(20, s.price.total + jitter), currency: "CAD" } }];
+      })
+    );
+    return { ...r, suppliers };
   });
   return { results: jittered };
 }

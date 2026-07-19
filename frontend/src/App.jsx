@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import RouteRow from "./components/RouteRow.jsx";
+import ExchangeView from "./components/ExchangeView.jsx";
 
 // Person A owns this file and everything in /frontend.
 // Consumes GET /api/opportunity from the backend - see docs/PRD.md section 12.
@@ -97,6 +98,7 @@ const DEMO_ROUTES = [
 ];
 
 export default function App() {
+  const [view, setView] = useState("departures"); // "departures" | "exchange"
   const [routes, setRoutes] = useState(DEMO_ROUTES);
   const [live, setLive] = useState(false);
   const [feedMode, setFeedMode] = useState(null); // "live" | "mock" | null (backend down)
@@ -106,7 +108,10 @@ export default function App() {
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [expandedCategory, setExpandedCategory] = useState(null);
 
+  // Only poll /api/opportunity while the departures board is visible; the
+  // exchange view owns its own /api/market polling inside ExchangeView.
   useEffect(() => {
+    if (view !== "departures") return;
     let cancelled = false;
 
     async function refresh() {
@@ -134,7 +139,7 @@ export default function App() {
       cancelled = true;
       clearInterval(timer);
     };
-  }, []);
+  }, [view]);
 
   const totalRecoverable = routes.reduce(
     (sum, r) => sum + (Number.isFinite(r.recoverableSpend) ? r.recoverableSpend : 0),
@@ -153,50 +158,82 @@ export default function App() {
           </div>
           <div className="tagline">where your spending is actually going</div>
         </div>
-        <div className="header-stats">
-          {totalRecoverable > 0 && (
-            <div className="header-recoverable">
-              <span className="header-recoverable__amount">${Math.round(totalRecoverable)}</span>
-              /mo recoverable
+
+        <div className="header-right">
+          <div className="view-tabs" role="tablist" aria-label="Board view">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === "departures"}
+              className={`view-tab${view === "departures" ? " view-tab--active" : ""}`}
+              onClick={() => setView("departures")}
+            >
+              Departures
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === "exchange"}
+              className={`view-tab${view === "exchange" ? " view-tab--active" : ""}`}
+              onClick={() => setView("exchange")}
+            >
+              Exchange
+            </button>
+          </div>
+
+          {view === "departures" && (
+            <div className="header-stats">
+              {totalRecoverable > 0 && (
+                <div className="header-recoverable">
+                  <span className="header-recoverable__amount">${Math.round(totalRecoverable)}</span>
+                  /mo recoverable
+                </div>
+              )}
+              <span className={`feed-badge${feedIsLive ? " feed-badge--live" : ""}`}>
+                {feedLabel}
+              </span>
             </div>
           )}
-          <span className={`feed-badge${feedIsLive ? " feed-badge--live" : ""}`}>
-            {feedLabel}
-          </span>
         </div>
       </header>
 
-      <div className="board-labels">
-        <span>Category</span>
-        <span>Destination</span>
-        <span>Trend</span>
-        <span>Live price</span>
-        <span>Status</span>
-      </div>
+      {view === "exchange" ? (
+        <ExchangeView />
+      ) : (
+        <>
+          <div className="board-labels">
+            <span>Category</span>
+            <span>Destination</span>
+            <span>Trend</span>
+            <span>Live price</span>
+            <span>Status</span>
+          </div>
 
-      {routes.map((r) => (
-        <RouteRow
-          key={r.category}
-          route={r}
-          expanded={expandedCategory === r.category}
-          onToggle={() =>
-            setExpandedCategory((cur) => (cur === r.category ? null : r.category))
-          }
-        />
-      ))}
+          {routes.map((r) => (
+            <RouteRow
+              key={r.category}
+              route={r}
+              expanded={expandedCategory === r.category}
+              onToggle={() =>
+                setExpandedCategory((cur) => (cur === r.category ? null : r.category))
+              }
+            />
+          ))}
 
-      <div className="coach-card">
-        <div className="coach-label">Coach</div>
-        <div className="coach-message">{coachMessage}</div>
-      </div>
+          <div className="coach-card">
+            <div className="coach-label">Coach</div>
+            <div className="coach-message">{coachMessage}</div>
+          </div>
 
-      <div className="meta">
-        <span>
-          {live ? "Live from backend" : "Demo data (backend offline)"} · prices on a
-          10-minute cache
-        </span>
-        <span>Last updated {lastUpdated.toLocaleTimeString()}</span>
-      </div>
+          <div className="meta">
+            <span>
+              {live ? "Live from backend" : "Demo data (backend offline)"} · prices on a
+              10-minute cache
+            </span>
+            <span>Last updated {lastUpdated.toLocaleTimeString()}</span>
+          </div>
+        </>
+      )}
     </div>
   );
 }

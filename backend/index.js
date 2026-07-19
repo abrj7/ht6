@@ -5,6 +5,7 @@ import { searchAccommodations } from "./stay22Client.js";
 import {
   mockSearchAccommodations,
   CATEGORY_DESTINATIONS,
+  CATALOG_DESTINATIONS,
   DESTINATION_COORDS,
 } from "./mockStay22.js";
 
@@ -365,6 +366,179 @@ app.get("/api/opportunity", async (req, res) => {
       coachMessage,
       routes,
       meta: { stay22Mode: USE_REAL_STAY22 ? "live" : "mock" },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(502).json({ error: "upstream failure", detail: String(err.message ?? err) });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// The exchange: /api/market. Destinations are tickers, suppliers are market
+// makers quoting the same property, chexy recoverable spend is buying power.
+// ---------------------------------------------------------------------------
+const TICKER_SYMBOLS = {
+  "Banff, AB": "YBNF",
+  "Montreal, QC": "YMTL",
+  "Tofino, BC": "YTOF",
+  "Prince Edward County, ON": "YPEC",
+  "Blue Mountain, ON": "YBLU",
+  "Niagara-on-the-Lake, ON": "YNTL",
+};
+
+const SUPPLIER_LABELS = {
+  booking: "Booking.com",
+  vrbo: "Vrbo",
+  expedia: "Expedia",
+  hotelscom: "Hotels.com",
+};
+
+function tickerSymbol(destination) {
+  if (TICKER_SYMBOLS[destination]) return TICKER_SYMBOLS[destination];
+  // Fallback for destinations added later: Y + first 3 consonants of the city.
+  const city = destination.split(",")[0].toUpperCase().replace(/[^A-Z]/g, "");
+  const consonants = city.replace(/[AEIOU]/g, "");
+  return "Y" + (consonants || city).slice(0, 3);
+}
+
+function supplierLabel(key) {
+  return SUPPLIER_LABELS[key] ?? key;
+}
+
+const round1 = (n) => Math.round(n * 10) / 10;
+
+// Order book for one property: best quote per supplier, cheapest first.
+function orderBook(property) {
+  return Object.entries(property?.suppliers ?? {})
+    .map(([supplier, s]) => ({ supplier, price: s?.price?.total }))
+    .filter((q) => typeof q.price === "number")
+    .sort((a, b) => a.price - b.price);
+}
+
+function spreadFromBook(book) {
+  if (book.length < 2) return null;
+  const best = book[0];
+  const worst = book[book.length - 1];
+  const spreadAbs = worst.price - best.price;
+  return {
+    bestSupplier: best.supplier,
+    bestPrice: best.price,
+    worstSupplier: worst.supplier,
+    worstPrice: worst.price,
+    spreadAbs,
+    spreadPct: round1((spreadAbs / best.price) * 100),
+  };
+}
+
+async function buildTicker(destination, buyingPower, { checkin, checkout }) {
+  let results = [];
+  try {
+    const acc = await getAccommodations(destination);
+    results = acc.results ?? [];
+  } catch {
+    // upstream flake - ticker still renders from history below
+  }
+
+  const best = bestValueProperty(results);
+  const last = best ? cheapestTotal(best) : null;
+
+  const history = getPriceHistory(destination);
+  const prev = history.length >= 2 ? history[history.length - 2].price : null;
+  const changeAbs = last !== null && prev !== null ? last - prev : null;
+  const changePct =
+    changeAbs !== null && prev ? round1((changeAbs / prev) * 100) : null;
+  const prices = history.map((p) => p.price);
+  const dayRange = prices.length
+    ? { low: Math.min(...prices), high: Math.max(...prices) }
+    : { low: null, high: null };
+
+  const book = best ? orderBook(best) : [];
+  const spread = spreadFromBook(book);
+
+  return {
+    symbol: tickerSymbol(destination),
+    destination,
+    last,
+    changeAbs,
+    changePct,
+    history,
+    dayRange,
+    book,
+    spread,
+    arb: Boolean(spread && spread.spreadPct >= 15),
+    affordable: last !== null && buyingPower >= last,
+    property: best
+      ? { name: best.name ?? null, type: best.type ?? null, rating: best.rating ?? null }
+      : null,
+    buyUrl: buildBookUrl(best, destination, checkin, checkout),
+  };
+}
+
+function pickMovers(tickers) {
+  const moved = tickers.filter((t) => typeof t.changePct === "number");
+  const up = moved.filter((t) => t.changePct > 0).sort((a, b) => b.changePct - a.changePct)[0];
+  const down = moved.filter((t) => t.changePct < 0).sort((a, b) => a.changePct - b.changePct)[0];
+  return { up: up?.symbol ?? null, down: down?.symbol ?? null };
+}
+
+// Ticker-tape lines built from real quote data (no canned strings).
+function buildTape(tickers, buyingPower) {
+  const lines = [];
+  for (const t of tickers) {
+    if (t.arb && t.spread) {
+      lines.push(`ARB ALERT: ${t.symbol} ${t.spread.spreadPct}% spread across suppliers`);
+    }
+  }
+  for (const t of tickers) {
+    if (typeof t.changePct !== "number" || t.changePct === 0) continue;
+    const arrow = t.changePct > 0 ? "\u25b2" : "\u25bc";
+    if (t.spread && t.spread.spreadAbs > 0 && t.property?.name) {
+      lines.push(
+        `${t.symbol} ${arrow}${Math.abs(t.changePct)}% - ${supplierLabel(t.spread.bestSupplier)} undercutting ${supplierLabel(t.spread.worstSupplier)} by $${t.spread.spreadAbs} on ${t.property.name}`
+      );
+    } else {
+      lines.push(`${t.symbol} ${arrow}${Math.abs(t.changePct)}% at $${t.last}`);
+    }
+  }
+  for (const t of tickers) {
+    if (t.last === null) continue;
+    if (t.dayRange.low !== null && t.last <= t.dayRange.low) {
+      lines.push(`${t.symbol} testing session low $${t.last}`);
+    } else if (t.dayRange.high !== null && t.last >= t.dayRange.high) {
+      lines.push(`${t.symbol} printing session high $${t.last}`);
+    }
+  }
+  const affordables = tickers.filter((t) => t.affordable);
+  if (buyingPower > 0 && affordables.length) {
+    const cheapest = affordables.sort((a, b) => a.last - b.last)[0];
+    lines.push(
+      `BUYING POWER $${buyingPower} covers ${cheapest.symbol} at $${cheapest.last} - ${affordables.length} ticker${affordables.length > 1 ? "s" : ""} in range`
+    );
+  }
+  return lines.slice(0, 8);
+}
+
+// GET /api/market - the exchange feed. Contract in docs/PRD.md section 12.
+app.get("/api/market", async (req, res) => {
+  try {
+    const dates = nextWeekendDates();
+    const spendSummary = await getSpendSummary();
+    const buyingPower = spendSummary?.summary?.totalRecoverable ?? 0;
+
+    const tickers = [];
+    // Sequential on purpose: getAccommodations caches per destination, and in
+    // mock mode the first pricing seeds history, so one pass fills the board.
+    for (const destination of CATALOG_DESTINATIONS) {
+      tickers.push(await buildTicker(destination, buyingPower, dates));
+    }
+
+    res.json({
+      asOf: new Date().toISOString(),
+      mode: USE_REAL_STAY22 ? "live" : "mock",
+      buyingPower,
+      tickers,
+      movers: pickMovers(tickers),
+      tape: buildTape(tickers, buyingPower),
     });
   } catch (err) {
     console.error(err);

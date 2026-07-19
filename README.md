@@ -3,6 +3,22 @@
 AI-powered spending tracker that turns everyday spending into live, real, bookable
 travel opportunity costs. Full spec: `docs/PRD.md`. Shared context: `CONTEXT.md`.
 
+## The WTF moment: Yonder Exchange
+We treat Stay22 accommodation inventory as a **securities exchange**:
+
+- Every destination is a **ticker** (YBNF, YMTL...) whose price is the cheapest
+  live nightly rate. Stay22 is snapshot-only, so we poll on their 10-min cache
+  and build our own price time series — our market data is genuinely ours.
+- The four suppliers (Booking, Vrbo, Expedia, Hotels.com) are **market makers**:
+  the same room priced differently across them is a bid/ask spread, surfaced as
+  live **arbitrage alerts** ("same room, $31 cheaper on Vrbo").
+- Your cut spending (Chexy feed) is your **buying power**. The AI coach is the
+  desk analyst. **BUY** is a real Stay22 affiliate link — every market order
+  pays commission, so the demo is the business model.
+
+One-liner for judges: *hotel inventory as a stock market where your bad habits
+fund the deposits and every order pays Stay22 commission.*
+
 ## Team split (own your folder, don't touch others' — see PRD section 11-12)
 - `/frontend` — Person A
 - `/backend` — Person B (owns Stay22 integration)

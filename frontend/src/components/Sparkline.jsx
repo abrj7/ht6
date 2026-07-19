@@ -1,6 +1,9 @@
 // Tiny inline SVG price-trend chart. Teal when the latest price is at or
 // below the first point (price moving toward the user), amber otherwise.
-export default function Sparkline({ history, width = 110, height = 28 }) {
+// Optional props (used by the Exchange view, no-ops for the departures board):
+//   stroke  - explicit color override
+//   stretch - fill the parent width (preserveAspectRatio "none" + constant stroke)
+export default function Sparkline({ history, width = 110, height = 28, stroke: strokeProp, stretch = false }) {
   if (!Array.isArray(history) || history.length < 2) return null;
 
   const prices = history
@@ -23,15 +26,16 @@ export default function Sparkline({ history, width = 110, height = 28 }) {
     .join(" ");
 
   const improving = prices[prices.length - 1] <= prices[0];
-  const stroke = improving ? "var(--route-teal)" : "var(--flap-amber)";
+  const stroke = strokeProp || (improving ? "var(--route-teal)" : "var(--flap-amber)");
   const [lastX, lastY] = points[points.length - 1];
 
   return (
     <svg
-      className="sparkline"
-      width={width}
-      height={height}
+      className={`sparkline${stretch ? " sparkline--stretch" : ""}`}
+      width={stretch ? undefined : width}
+      height={stretch ? undefined : height}
       viewBox={`0 0 ${width} ${height}`}
+      preserveAspectRatio={stretch ? "none" : "xMidYMid meet"}
       role="img"
       aria-label={`Price trend, ${improving ? "falling" : "rising"}`}
     >
@@ -42,6 +46,7 @@ export default function Sparkline({ history, width = 110, height = 28 }) {
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
+        vectorEffect={stretch ? "non-scaling-stroke" : undefined}
       />
       <circle cx={lastX} cy={lastY} r="2.2" fill={stroke} />
     </svg>
