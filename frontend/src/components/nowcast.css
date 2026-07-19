@@ -1,0 +1,344 @@
+/* Economic Nowcast — light theme tokens from index.css only */
+
+.nowcast {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-bottom: 2rem;
+}
+
+.nowcast-hero {
+  display: grid;
+  grid-template-columns: minmax(200px, 280px) 1fr;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+@media (max-width: 900px) {
+  .nowcast-hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+.nowcast-gauge {
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.nowcast-gauge__label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--chalk-dim);
+  margin-bottom: 0.75rem;
+}
+
+.nowcast-gauge__ring {
+  width: 160px;
+  height: 160px;
+}
+
+.nowcast-gauge__value {
+  font-family: var(--font-mono);
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--chalk);
+  line-height: 1;
+  margin-top: 0.5rem;
+}
+
+.nowcast-gauge__base {
+  font-size: 1rem;
+  color: var(--chalk-dim);
+  font-weight: 400;
+}
+
+.nowcast-signal {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.65rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.nowcast-signal--heating {
+  background: rgba(193, 72, 59, 0.1);
+  color: var(--stamp-red);
+}
+
+.nowcast-signal--cooling {
+  background: rgba(47, 138, 134, 0.12);
+  color: var(--route-teal);
+}
+
+.nowcast-signal--stable {
+  background: rgba(109, 116, 128, 0.1);
+  color: var(--chalk-dim);
+}
+
+.nowcast-momentum {
+  margin-top: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--chalk-dim);
+}
+
+.nowcast-chart-panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem 0.75rem;
+  min-height: 280px;
+}
+
+.nowcast-chart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.nowcast-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.68rem;
+  color: var(--chalk-dim);
+}
+
+.nowcast-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.nowcast-legend-line {
+  width: 18px;
+  height: 0;
+  border-top: 2px solid var(--chalk-dim);
+}
+
+.nowcast-legend-line--dashed {
+  border-top-style: dashed;
+}
+
+.nowcast-legend-line--solid {
+  border-top-color: var(--flap-amber);
+}
+
+.nowcast-legend-band {
+  width: 14px;
+  height: 10px;
+  background: rgba(47, 138, 134, 0.15);
+  border: 1px solid rgba(47, 138, 134, 0.35);
+  border-radius: 2px;
+}
+
+.nowcast-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.nowcast-chart-tick {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  fill: var(--chalk-dim);
+}
+
+.nowcast-event-marker {
+  cursor: default;
+}
+
+.nowcast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.85rem;
+}
+
+.nowcast-city {
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: var(--radius);
+  padding: 0.9rem 1rem;
+  transition: border-color 0.15s ease;
+}
+
+.nowcast-city:hover {
+  border-color: var(--flap-amber);
+}
+
+.nowcast-city__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.nowcast-city__symbol {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--flap-amber);
+}
+
+.nowcast-city__hdx {
+  font-family: var(--font-mono);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--chalk);
+}
+
+.nowcast-city__name {
+  font-size: 0.82rem;
+  color: var(--chalk-dim);
+  margin-bottom: 0.5rem;
+}
+
+.nowcast-city__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem 0.75rem;
+  font-size: 0.72rem;
+  color: var(--chalk-dim);
+}
+
+.nowcast-city__stats dt {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.nowcast-city__stats dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  color: var(--chalk);
+  text-align: right;
+}
+
+.nowcast-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+@media (max-width: 800px) {
+  .nowcast-panels {
+    grid-template-columns: 1fr;
+  }
+}
+
+.nowcast-panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+}
+
+.nowcast-panel h3 {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--chalk);
+}
+
+.nowcast-panel p {
+  margin: 0 0 0.65rem;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: var(--chalk-dim);
+}
+
+.nowcast-weights {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nowcast-weights li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--panel-line);
+  font-size: 0.8rem;
+}
+
+.nowcast-weights li:last-child {
+  border-bottom: none;
+}
+
+.nowcast-weights span:last-child {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--flap-amber);
+}
+
+.nowcast-event {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--panel-line);
+}
+
+.nowcast-event:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.nowcast-event__title {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--chalk);
+  margin-bottom: 0.35rem;
+}
+
+.nowcast-event__meta {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--route-teal);
+  margin-bottom: 0.5rem;
+}
+
+.nowcast-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--chalk-dim);
+  padding-top: 0.25rem;
+}
+
+.nowcast-feed-badge {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  background: var(--flap-bg);
+  color: var(--flap-glow);
+}
+
+.nowcast-feed-badge--live {
+  background: rgba(47, 138, 134, 0.15);
+  color: var(--route-teal);
+}
