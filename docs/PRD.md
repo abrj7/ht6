@@ -143,6 +143,35 @@ Ticker symbols: YBNF (Banff), YMTL (Montreal), YTOF (Tofino), YPEC (Prince Edwar
 YBLU (Blue Mountain), YNTL (Niagara-on-the-Lake).
 ```
 
+```
+GET /api/map?city=Toronto&type=&min=&max=&minRating=   — map data layer (home-city view)
+city accepts "Toronto" or "Toronto, ON" (case-insensitive; any catalog city works).
+Unknown city → 404 { error, availableCities: [...] }.
+type = exact property type; min/max = price band on the cheapest supplier
+total; minRating = guest rating floor. All filtering is server-side.
+→ {
+  city: "Toronto, ON",
+  center: { lat, lng },
+  asOf: ISOtimestamp,
+  mode: "live"|"mock",
+  properties: [{
+    id, name, type,
+    lat, lng,
+    price,                       // cheapest nightly total across suppliers (10-min cached)
+    rating, capacity,
+    supplier,                    // supplier holding the best price
+    spreadPct,                   // % spread across suppliers on this property (0 if <2 suppliers)
+    arb,                         // boolean, spreadPct >= 15
+    freeCancellation, instantBook,
+    bookUrl                      // Stay22 affiliate booking link
+  }],
+  stats: { count, minPrice, maxPrice, avgPrice, arbCount },   // POST-filter
+  filters: { types: [...], priceRange: { min, max } }         // UNFILTERED bounds for building UI controls
+}
+Note: Toronto is the user's home city — it is served by /api/map only and is
+deliberately NOT an exchange ticker and NOT a departure-board destination.
+```
+
 **AI-service exposes to Backend:**
 ```
 POST /coach

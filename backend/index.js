@@ -7,6 +7,9 @@ import {
   CATEGORY_DESTINATIONS,
   CATALOG_DESTINATIONS,
   DESTINATION_COORDS,
+  MAP_CITIES,
+  CITY_CENTERS,
+  resolveCity,
 } from "./mockStay22.js";
 
 const app = express();
@@ -539,6 +542,109 @@ app.get("/api/market", async (req, res) => {
       tickers,
       movers: pickMovers(tickers),
       tape: buildTape(tickers, buyingPower),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(502).json({ error: "upstream failure", detail: String(err.message ?? err) });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// The map layer: /api/map. One pin per property with the cheapest supplier
+// quote, spread/arb data, and unfiltered bounds so the UI can build controls.
+// Contract in docs/PRD.md section 12.
+// ---------------------------------------------------------------------------
+function mapProperty(p, city, checkin, checkout) {
+  const book = orderBook(p);
+  if (!book.length) return null; // no priced supplier - nothing to pin
+  const spread = spreadFromBook(book);
+  const spreadPct = spread ? spread.spreadPct : 0;
+  return {
+    id: p.id ?? null,
+    name: p.name ?? null,
+    type: p.type ?? null,
+    lat: p.location?.lat ?? p.location?.latitude ?? null,
+    lng: p.location?.lng ?? p.location?.longitude ?? null,
+    price: book[0].price, // cheapest nightly total across suppliers
+    rating: p.rating ?? null,
+    capacity: p.capacity ?? null,
+    supplier: book[0].supplier,
+    spreadPct,
+    arb: spreadPct >= 15,
+    freeCancellation: p.policies?.freeCancellation ?? null,
+    instantBook: p.policies?.instantBook ?? null,
+    bookUrl: buildBookUrl(p, city, checkin, checkout),
+  };
+}
+
+// GET /api/map?city=Toronto&type=hostel&min=50&max=150&minRating=8
+app.get("/api/map", async (req, res) => {
+  const city = resolveCity(req.query.city ?? "Toronto");
+  if (!city) {
+    return res.status(404).json({
+      error: `unknown city: ${req.query.city}`,
+      availableCities: MAP_CITIES,
+    });
+  }
+
+  const { type } = req.query;
+  const num = (v) => (v !== undefined && Number.isFinite(Number(v)) ? Number(v) : null);
+  const min = num(req.query.min);
+  const max = num(req.query.max);
+  const minRating = num(req.query.minRating);
+
+  try {
+    const { checkin, checkout } = nextWeekendDates();
+
+    // Unfiltered pass always runs: it feeds the shared cache/price history
+    // and gives the UNFILTERED bounds the UI needs to build filter controls.
+    const unfiltered = await getAccommodations(city);
+    let results = unfiltered.results ?? [];
+
+    // Live mode pushes the filters upstream (Stay22 supports min/max/type);
+    // mock mode just filters the catalog locally below.
+    if (USE_REAL_STAY22 && (type || min !== null || max !== null)) {
+      const narrowed = await getAccommodations(city, { type, min, max });
+      results = narrowed.results ?? [];
+    }
+
+    const allPins = (unfiltered.results ?? [])
+      .map((p) => mapProperty(p, city, checkin, checkout))
+      .filter(Boolean);
+
+    let pins = results.map((p) => mapProperty(p, city, checkin, checkout)).filter(Boolean);
+    // Local filtering applies in both modes: it's a no-op where the upstream
+    // already narrowed, and it enforces minRating (no Stay22 param used).
+    if (type) pins = pins.filter((p) => p.type === type);
+    if (min !== null) pins = pins.filter((p) => p.price >= min);
+    if (max !== null) pins = pins.filter((p) => p.price <= max);
+    if (minRating !== null) pins = pins.filter((p) => p.rating !== null && p.rating >= minRating);
+
+    const prices = pins.map((p) => p.price);
+    const allPrices = allPins.map((p) => p.price);
+
+    res.json({
+      city,
+      center: CITY_CENTERS[city] ?? null,
+      asOf: new Date().toISOString(),
+      mode: USE_REAL_STAY22 ? "live" : "mock",
+      properties: pins,
+      stats: {
+        count: pins.length,
+        minPrice: prices.length ? Math.min(...prices) : null,
+        maxPrice: prices.length ? Math.max(...prices) : null,
+        avgPrice: prices.length
+          ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length)
+          : null,
+        arbCount: pins.filter((p) => p.arb).length,
+      },
+      filters: {
+        types: [...new Set(allPins.map((p) => p.type).filter(Boolean))],
+        priceRange: {
+          min: allPrices.length ? Math.min(...allPrices) : null,
+          max: allPrices.length ? Math.max(...allPrices) : null,
+        },
+      },
     });
   } catch (err) {
     console.error(err);
