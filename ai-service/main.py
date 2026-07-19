@@ -2,15 +2,17 @@
 Person C owns this file and everything in /ai-service.
 Exposes POST /coach - see docs/PRD.md section 12 for the contract.
 
-IMPORTANT: FreeSolo docs are TBD - confirm exact training/inference API
-before wiring up the real call. Until then this runs in STUB MODE:
-contract-correct responses, templated messages. The real implementation
-must hit the fine-tuned model (tone/timing generation), NOT do the
-opportunity-cost math - that lives in the backend (see PRD section 4).
+Real mode calls an OpenAI-compatible FreeSolo chat completions endpoint
+(FREESOLO_BASE_URL + "/chat/completions") with the fine-tuned FREESOLO_MODEL.
+If FREESOLO_API_KEY, FREESOLO_BASE_URL, or FREESOLO_MODEL is missing, or the
+real call fails for any reason, this falls back to STUB MODE: contract-correct
+responses, templated messages - so a demo never crashes on a flaky endpoint.
 """
+import json
 import os
 import random
 
+import requests
 from fastapi import FastAPI
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -18,7 +20,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 FREESOLO_API_KEY = os.getenv("FREESOLO_API_KEY", "")
-STUB_MODE = not FREESOLO_API_KEY
+FREESOLO_BASE_URL = os.getenv("FREESOLO_BASE_URL", "")
+FREESOLO_MODEL = os.getenv("FREESOLO_MODEL", "")
+STUB_MODE = not (FREESOLO_API_KEY and FREESOLO_BASE_URL and FREESOLO_MODEL)
 
 app = FastAPI()
 
@@ -45,17 +49,54 @@ STUB_TEMPLATES = {
 }
 
 
+def _stub_message(tone: str) -> str:
+    options = STUB_TEMPLATES.get(tone, STUB_TEMPLATES["encouraging"])
+    return random.choice(options)
+
+
+def _call_freesolo(req: CoachRequest) -> str:
+    """POST an OpenAI-compatible chat completion request to FreeSolo.
+
+    Raises on any failure (network error, bad status, unexpected response
+    shape) so the caller can fall back to a stub message instead of crashing.
+    """
+    payload = {
+        "model": FREESOLO_MODEL,
+        "messages": [
+            {
+                "role": "user",
+                "content": json.dumps(
+                    {
+                        "spendSummary": req.spendSummary,
+                        "goalAmount": req.goalAmount,
+                        "tone": req.tone,
+                    }
+                ),
+            }
+        ],
+        "temperature": 0.4,
+    }
+    headers = {"Authorization": f"Bearer {FREESOLO_API_KEY}"}
+    response = requests.post(
+        f"{FREESOLO_BASE_URL}/chat/completions",
+        json=payload,
+        headers=headers,
+        timeout=20,
+    )
+    response.raise_for_status()
+    data = response.json()
+    return data["choices"][0]["message"]["content"]
+
+
 @app.post("/coach")
 def coach(req: CoachRequest):
     if STUB_MODE:
-        options = STUB_TEMPLATES.get(req.tone, STUB_TEMPLATES["encouraging"])
-        return {"message": random.choice(options)}
+        return {"message": _stub_message(req.tone)}
 
-    # TODO (Person C): real FreeSolo inference call goes here once docs are
-    # confirmed - fine-tuned model, structured prompt from spendSummary +
-    # goalAmount + tone. Do not silently fall back to a generic model in the
-    # demo path (PRD section 6, item 4).
-    raise NotImplementedError("FreeSolo inference not wired up yet")
+    try:
+        return {"message": _call_freesolo(req)}
+    except Exception:
+        return {"message": _stub_message(req.tone)}
 
 
 @app.get("/health")
